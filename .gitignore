@@ -1,0 +1,30 @@
+# Node
+node_modules/
+
+# Android build
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+
+# Keystore (NUNCA versionar)
+keystore/strengthapp-release.jks
+keystore.properties
+
+# Build outputs (firmas)
+dist/*.aab
+dist/*.apk
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Temp
+*.tmp
+*.log

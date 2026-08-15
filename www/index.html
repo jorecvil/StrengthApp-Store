@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Strength Tracker v6.6 (CRUD + Backup Merge)</title>
+    <script src="capacitor.js"></script>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExNSIgZmlsbD0iIzFlMjkzYiIvPgogIDxwYXRoIGQ9Ik0yNTYgOTZMMzgyLjE4IDIyMi4xOEgzMjBWMzg0SDE5MlYyMjIuMThIMTI5LjgyTDI1NiA5NloiIGZpbGw9IiNmZmZmZmYiLz4KICA8cmVjdCB4PSIxNDQiIHk9IjMzNiIgd2lkdGg9IjIyNCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNzYiIHk9IjQwMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjMiLz4KPC9zdmc+">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExNSIgZmlsbD0iIzFlMjkzYiIvPgogIDxwYXRoIGQ9Ik0yNTYgOTZMMzgyLjE4IDIyMi4xOEgzMjBWMzg0SDE5MlYyMjIuMThIMTI5LjgyTDI1NiA5NloiIGZpbGw9IiNmZmZmZmYiLz4KICA8cmVjdCB4PSIxNDQiIHk9IjMzNiIgd2lkdGg9IjIyNCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNzYiIHk9IjQwMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjMiLz4KPC9zdmc+">
+    <style>
+        /* --- THEME: MINIMAL SLATE --- */
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-input: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #0f172a;
+            --primary-text: #ffffff;
+            --secondary: #cbd5e1;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        body.dark {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f8fafc;
+            --primary-text: #0f172a;
+            --secondary: #475569;
+            --accent: #34d399;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 15px; line-height: 1.5; padding-bottom: 80px; padding-top: env(safe-area-inset-top); transition: background-color 0.3s ease, color 0.3s ease; }
+        h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.025em; }
+        h1 { font-size: 1.5rem; }
+        h2 { font-size: 1.25rem; }
+        h3 { font-size: 1.1rem; }
+        .text-small { font-size: 0.85rem; color: var(--text-muted); }
+        .text-center { text-align: center; }
+        .mono { font-family: 'Courier New', Courier, monospace; letter-spacing: -0.5px; }
+        .flex { display: flex; align-items: center; }
+        .flex-col { display: flex; flex-direction: column; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-s { gap: 8px; }
+        .gap-m { gap: 16px; }
+        .mt-m { margin-top: 16px; }
+        .mb-m { margin-bottom: 16px; }
+        .w-full { width: 100%; }
+        header { position: sticky; top: 0; background: var(--bg-body); padding: 16px; z-index: 100; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: background-color 0.3s; }
+        button { border: none; background: var(--bg-input); color: var(--text-main); padding: 14px 18px; min-height: 48px; border-radius: var(--radius); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        button:active { transform: scale(0.97); }
+        button.primary { background: var(--primary); color: var(--primary-text); }
+        button.secondary { background: var(--bg-input); border: 1px solid var(--border); }
+        button.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        button.ghost { background: transparent; color: var(--text-muted); }
+        button.small { padding: 10px 14px; font-size: 0.9rem; min-height: 40px; }
+        button.icon-btn { width: 48px; height: 48px; min-height: 48px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 16px; }
+        .card.active { border-left: 4px solid var(--accent); }
+        input, textarea { background: var(--bg-input); border: 1px solid transparent; color: var(--text-main); padding: 14px; min-height: 48px; border-radius: 8px; font-size: 16px; width: 100%; font-family: inherit; transition: border 0.2s; }
+        input:focus, textarea:focus { border-color: var(--text-muted); }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; background: var(--bg-input); color: var(--text-muted); letter-spacing: 0.05em; }
+        .badge.in_progress { background: var(--text-main); color: var(--bg-card); }
+        .badge.completed { background: var(--accent); color: #fff; }
+        .set-row { display: grid; grid-template-columns: 40px 1fr 1.5fr 50px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .set-row:last-child { border-bottom: none; }
+        .set-row.header { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); font-weight: 600; }
+        .plan-col { display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 12px; text-align: right; }
+        .stat-input { text-align: center; font-weight: 700; background: var(--bg-body); min-height: 44px; padding: 0 4px; font-size: 1.1rem; }
+        .check-btn { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); width: 48px; height: 48px; min-height: 48px; }
+        .check-btn.done { background: var(--accent); color: white; border-color: var(--accent); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .file-input-wrapper { border: 2px dashed var(--border); border-radius: var(--radius); padding: 30px; text-align: center; position: relative; margin-bottom: 20px; transition: background 0.2s; min-height: 80px; }
+        .file-input-wrapper:active { background: var(--bg-input); }
+        .file-input-wrapper input { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer; }
+        #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--bg-card); padding: 12px 24px; border-radius: 50px; font-weight: 600; opacity: 0; pointer-events: none; z-index: 300; transition: opacity 0.3s; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        #toast.show { opacity: 1; }
+        .progress-table { width: 100%; border-collapse: collapse; }
+        .progress-table th { text-align: left; padding: 10px 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+        .progress-table td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
+        .progress-table tr:last-child td { border-bottom: none; }
+        .rm-badge { background: var(--accent); color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+        .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+        .divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 20px 0; position: relative; }
+        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .section-header { background: var(--bg-input); padding: 12px 16px; margin: 20px -24px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
+        .display-block { display: block; }
+        .opacity-50 { opacity: 0.5; }
+        .font-bold { font-weight: 700; }
+        .rir-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
+        .rir-btn { min-height: 56px; font-size: 1.2rem; border: 2px solid var(--border); background: var(--bg-input); }
+        .rir-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+        details { margin-bottom: 16px; }
+        summary { cursor: pointer; padding: 12px; background: var(--bg-input); border-radius: var(--radius); font-weight: 600; user-select: none; }
+        summary:hover { background: var(--secondary); }
+        details[open] summary { margin-bottom: 12px; }
+        .export-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    </style>
+</head>
+<body class="dark"><div id="app"></div><div id="toast">Notificación</div>
+<script>
+/**
+ * STRENGTH TRACKER V6.6
+ * - CRUD Manual: Crear semanas vacías y sesiones Ad-Hoc.
+ * - Backup Inteligente: Merge/Fusión de datos entre dispositivos.
+ * - Optimización: Limpieza de localStorage.
+ * - Nativo: Android ready.
+ */
+const STORE_KEY = 'strength_app_v6_data';
+const THEME_KEY = 'strength_app_theme';
+const BACKUP_PREFIX = 'strength_app_backup_';
+
+// Memoria RIR
+let lastRIR = null;
+
+const wakeLock = {
+    lock: null,
+    request: async () => {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock.lock = await navigator.wakeLock.request('screen');
+            } catch (err) { console.warn('Wake Lock no disponible'); }
+        }
+    },
+    release: async () => {
+        if (wakeLock.lock) {
+            await wakeLock.lock.release();
+            wakeLock.lock = null;
+        }
+    }
+};
+
+const validate = {
+    json: (str) => {
+        try {
+            const obj = JSON.parse(str);
+            if (!obj.week_ref) throw new Error("Falta 'week_ref'");
+            if (!obj.sessions || !Array.isArray(obj.sessions)) throw new Error("'sessions' debe ser un array");
+            return obj;
+        } catch(e) { throw new Error(`JSON inválido: ${e.message}`); }
+    },
+    backupJSON: (str) => {
+        try {
+            const obj = JSON.parse(str);
+            if (obj.backup_meta && obj.data) return obj.data;
+            if (obj.weeks && typeof obj.weeks === 'object') return obj;
+            throw new Error("No es un backup válido");
+        } catch(e) { throw new Error(`Backup inválido: ${e.message}`); }
+    },
+    number: (value, min, max, name) => {
+        const num = parseFloat(value);
+        if (isNaN(num)) throw new Error(`${name} debe ser un número`);
+        if (num < min || num > max) throw new Error(`${name} debe estar entre ${min} y ${max}`);
+        return num;
+    }
+};
+
+// UTILIDADES HÍBRIDAS (Nativo/Web)
+const utils = {
+    uuid: () => Date.now().toString(36) + Math.random().toString(36).substr(2),
+    isoNow: () => new Date().toISOString(),
+    formatDate: (isoString) => {
+        if (!isoString) return '-';
+        const d = new Date(isoString);
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    },
+    formatMonth: (monthKey) => {
+        const [year, month] = monthKey.split('-');
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        return `${months[parseInt(month) - 1]} ${year}`;
+    },
+    save: (data) => {
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+        backup.auto();
+    },
+    load: () => {
+        const raw = localStorage.getItem(STORE_KEY);
+        return raw ? JSON.parse(raw) : { weeks: {} };
+    },
+    download: async (data, filename) => {
+        const text = JSON.stringify(data, null, 2);
+        if (window.Capacitor && Capacitor.isNativePlatform()) {
+            const { Filesystem, Share } = Capacitor.Plugins;
+            try {
+                await Filesystem.writeFile({ path: filename, data: text, directory: 'CACHE', encoding: 'utf8' });
+                const uriResult = await Filesystem.getUri({ directory: 'CACHE', path: filename });
+                await Share.share({ title: 'Backup Strength Tracker', files: [uriResult.uri] });
+                ui.toast("✓ Archivo listo");
+            } catch (e) {
+                ui.toast("⚠️ Error nativo. Portapapeles.");
+                navigator.clipboard.writeText(text);
+            }
+        } else {
+            const blob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    },
+    downloadCSV: async (csv, filename) => {
+        if (window.Capacitor && Capacitor.isNativePlatform()) {
+            const { Filesystem, Share } = Capacitor.Plugins;
+            try {
+                await Filesystem.writeFile({ path: filename, data: csv, directory: 'CACHE', encoding: 'utf8' });
+                const uriResult = await Filesystem.getUri({ directory: 'CACHE', path: filename });
+                await Share.share({ title: 'Exportar CSV', files: [uriResult.uri] });
+            } catch(e) { ui.toast("⚠️ Error CSV nativo"); }
+        } else {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    },
+    initTheme: () => {
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved) { document.body.className = saved; }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { document.body.className = 'light'; }
+        else { document.body.className = 'dark'; }
+    },
+    toggleTheme: () => {
+        const current = document.body.className;
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.body.className = next;
+        localStorage.setItem(THEME_KEY, next);
+        ui.render();
+    }
+};
+
+const backup = {
+    // Optimización: Solo guarda los últimos 5 backups
+    auto: () => {
+        try {
+            const data = utils.load();
+            const today = new Date().toISOString().split('T')[0];
+            const backupKey = `${BACKUP_PREFIX}${today}`;
+            localStorage.setItem(backupKey, JSON.stringify(data));
+            const allKeys = Object.keys(localStorage);
+            const backupKeys = allKeys.filter(k => k.startsWith(BACKUP_PREFIX)).sort().reverse();
+            backupKeys.slice(5).forEach(k => localStorage.removeItem(k));
+        } catch(e) { console.error('Error backup:', e); }
+    },
+    list: () => Object.keys(localStorage).filter(k => k.startsWith(BACKUP_PREFIX)).map(k => k.replace(BACKUP_PREFIX, '')).sort().reverse(),
+    get: (date) => {
+        const data = localStorage.getItem(`${BACKUP_PREFIX}${date}`);
+        return data ? JSON.parse(data) : null;
+    },
+    download: (date) => {
+        const data = backup.get(date);
+        if (!data) { ui.toast('⚠️ Backup no encontrado'); return; }
+        const backupFile = { backup_meta: { date: date, created_at: new Date().toISOString(), version: "6.6" }, data: data };
+        utils.download(backupFile, `strength_backup_${date}.json`);
+    },
+    downloadAll: () => {
+        const dates = backup.list();
+        if (dates.length === 0) { ui.toast('⚠️ No hay backups'); return; }
+        const allBackups = dates.map(date => ({ date: date, data: backup.get(date) }));
+        const exportFile = { export_meta: { created_at: new Date().toISOString(), version: "6.6", total_backups: allBackups.length }, backups: allBackups };
+        utils.download(exportFile, `strength_backups_all_${new Date().toISOString().split('T')[0]}.json`);
+    },
+    // FUSIÓN DE BACKUPS (MERGE RESTORE)
+    mergeRestore: (importedData) => {
+        const currentData = utils.load();
+        
+        // Iterar sobre las semanas del backup
+        Object.values(importedData.weeks || {}).forEach(importedWeek => {
+            const weekId = importedWeek.week.week_id;
+            
+            if (currentData.weeks[weekId]) {
+                // Si la semana existe, FUSIONAR sesiones
+                currentData.weeks[weekId] = logic.mergeWeeks(currentData.weeks[weekId], importedWeek);
+            } else {
+                // Si es nueva, AÑADIRLA
+                currentData.weeks[weekId] = importedWeek;
+            }
+        });
+
+        // Guardar resultado
+        utils.save(currentData);
+        db = currentData;
+        ui.toast('✓ Backup fusionado (Datos combinados)');
+        state.modal = null;
+        actions.goHome();
+    },
+    restoreFromJSON: (jsonString, mode = 'merge') => {
+        try {
+            const data = validate.backupJSON(jsonString);
+            
+            if (mode === 'replace') {
+                if (!confirm(`⚠️ ALERTA DE BORRADO\n\nVas a reemplazar TODA la base de datos con este backup. Se perderán los datos actuales no guardados.\n\n¿Continuar?`)) return;
+                localStorage.setItem(STORE_KEY, JSON.stringify(data));
+                db = utils.load();
+                ui.toast('✓ Base de datos reemplazada');
+                state.modal = null;
+                actions.goHome();
+            } else {
+                // Modo Merge (Por defecto)
+                backup.mergeRestore(data);
+            }
+            backup.auto();
+        } catch(e) { ui.toast(`⚠️ ${e.message}`); }
+    }
+};
+
+const analytics = {
+    estimate1RM: (weight, reps) => {
+        if (!weight || !reps) return null;
+        if (reps === 1) return weight;
+        return Math.round(weight * (1 + reps / 30) * 10) / 10;
+    },
+    getExerciseHistory: (exerciseName) => {
+        const sessions = [];
+        Object.values(db.weeks).forEach(w => {
+            w.sessions.forEach(s => {
+                if (s.session_completion.status !== 'completed') return;
+                s.exercises.filter(e => e.name === exerciseName).forEach(e => {
+                    e.execution.sets.forEach((set, idx) => {
+                        if (set.load && set.reps) {
+                            sessions.push({
+                                date: s.session_completion.completed_at || s.session_completion.started_at,
+                                weekNum: w.week.week_number,
+                                sessionId: s.session_id,
+                                setIndex: idx + 1,
+                                reps: set.reps,
+                                load: set.load,
+                                estimated1RM: analytics.estimate1RM(set.load, set.reps),
+                                rir: set.rir !== undefined ? set.rir : null,
+                                notes: set.notes || ""
+                            });
+                        }
+                    });
+                });
+            });
+        });
+        return sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    },
+    getBest1RM: (exerciseName) => {
+        const history = analytics.getExerciseHistory(exerciseName);
+        if (history.length === 0) return null;
+        return history.reduce((best, curr) => (curr.estimated1RM > best) ? curr.estimated1RM : best, 0);
+    },
+    get1RMRecords: (exerciseName) => {
+        const history = analytics.getExerciseHistory(exerciseName);
+        if (history.length === 0) return [];
+        const records = [];
+        let currentBest = 0;
+        history.reverse().forEach(session => {
+            if (session.estimated1RM > currentBest) {
+                records.push({
+                    date: session.date,
+                    value: session.estimated1RM,
+                    improvement: currentBest > 0 ? session.estimated1RM - currentBest : 0,
+                    reps: session.reps,
+                    load: session.load
+                });
+                currentBest = session.estimated1RM;
+            }
+        });
+        return records.reverse();
+    },
+    get1RMMonthlySummary: (exerciseName) => {
+        const history = analytics.getExerciseHistory(exerciseName);
+        if (history.length === 0) return [];
+        const monthlyBest = {};
+        history.forEach(session => {
+            const date = new Date(session.date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            if (!monthlyBest[monthKey] || session.estimated1RM > monthlyBest[monthKey].value) {
+                monthlyBest[monthKey] = { month: monthKey, value: session.estimated1RM, date: session.date, reps: session.reps, load: session.load };
+            }
+        });
+        return Object.values(monthlyBest).sort((a, b) => b.month.localeCompare(a.month));
+    },
+    getRecentSets: (exerciseName, days = 30) => {
+        const history = analytics.getExerciseHistory(exerciseName);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        return history.filter(s => new Date(s.date) >= cutoffDate);
+    },
+    getAllExercises: () => {
+        const exercises = new Set();
+        Object.values(db.weeks).forEach(w => {
+            w.sessions.forEach(s => {
+                s.exercises.forEach(e => exercises.add(e.name));
+            });
+        });
+        return Array.from(exercises).sort();
+    },
+    exportToCSV: (exerciseName) => {
+        const history = analytics.getExerciseHistory(exerciseName);
+        if (history.length === 0) return null;
+        let csv = 'Fecha,Ejercicio,Set,Reps,Carga,1RM_Estimado,RIR,Notas\n';
+        history.forEach(h => {
+            const date = utils.formatDate(h.date);
+            const rir = h.rir !== null ? h.rir : '-';
+            const notes = (h.notes || '').replace(/,/g, ';');
+            csv += `${date},${exerciseName},${h.setIndex},${h.reps},${h.load},${h.estimated1RM || '-'},${rir},"${notes}"\n`;
+        });
+        return csv;
+    },
+    exportToJSON: (exerciseName) => {
+        const history = analytics.getExerciseHistory(exerciseName);
+        return {
+            exercise: exerciseName,
+            exported_at: new Date().toISOString(),
+            best_1rm: analytics.getBest1RM(exerciseName),
+            total_sets: history.length,
+            history: history
+        };
+    },
+    exportAll1RMs: () => {
+        const exercises = analytics.getAllExercises();
+        const all1RMs = [];
+        exercises.forEach(exName => {
+            const best1RM = analytics.getBest1RM(exName);
+            const records = analytics.get1RMRecords(exName);
+            const monthlySummary = analytics.get1RMMonthlySummary(exName);
+            all1RMs.push({
+                exercise: exName,
+                best_1rm: best1RM,
+                total_records: records.length,
+                records: records,
+                monthly_summary: monthlySummary
+            });
+        });
+        return {
+            exported_at: new Date().toISOString(),
+            total_exercises: exercises.length,
+            exercises: all1RMs
+        };
+    },
+    exportAll1RMsCSV: () => {
+        const exercises = analytics.getAllExercises();
+        let csv = 'Ejercicio,Mejor 1RM (kg),Fecha Mejor,Histórico Récords\n';
+        exercises.forEach(exName => {
+            const best1RM = analytics.getBest1RM(exName);
+            const records = analytics.get1RMRecords(exName);
+            const bestRecord = records.length > 0 ? records[0] : null;
+            const recordHistory = records.map(r => `${r.value}kg (${utils.formatDate(r.date)})`).join(' → ');
+            csv += `"${exName}",${best1RM || '-'},${bestRecord ? utils.formatDate(bestRecord.date) : '-'},"${recordHistory}"\n`;
+        });
+        return csv;
+    }
+};
+
+let db = utils.load();
+let state = {
+    view: 'home',
+    activeWeekId: null,
+    activeSessionId: null,
+    activeExerciseId: null,
+    historyExercise: null,
+    modal: null,
+    setModal: null
+};
+
+const logic = {
+    mergeWeeks: (existingWeek, newWeek) => {
+        const mergedSessions = [...existingWeek.sessions]; 
+        const existingIds = new Set(mergedSessions.map(s => s.session_id));
+        newWeek.sessions.forEach(newSession => {
+            if (!existingIds.has(newSession.session_id)) {
+                const cleanSession = {
+                    ...newSession,
+                    session_completion: newSession.session_completion || { status: 'pending', started_at: null, completed_at: null },
+                    session_notes: newSession.session_notes || "",
+                    exercises: newSession.exercises.map(e => ({
+                        ...e,
+                        override: null,
+                        execution: { sets: [] },
+                        completion: { status: 'pending', completed_at: null },
+                        notes: ""
+                    }))
+                };
+                mergedSessions.push(cleanSession);
+            }
+        });
+        return {
+            ...existingWeek, 
+            sessions: mergedSessions, 
+            generated_at: utils.isoNow()
+        };
+    },
+    // NUEVO: CREAR SEMANA MANUAL
+    createManualWeek: () => {
+        const weekNum = Object.keys(db.weeks).length + 1;
+        const weekId = utils.uuid();
+        const newWeek = {
+            week: { week_id: weekId, week_number: weekNum, source: "Manual" },
+            sessions: [],
+            generated_at: utils.isoNow()
+        };
+        db.weeks[weekId] = newWeek;
+        utils.save(db);
+        ui.toast("✓ Semana creada");
+        actions.openWeek(weekId);
+    },
+    // NUEVO: AÑADIR SESIÓN MANUAL
+    addSessionToWeek: (weekId) => {
+        const week = db.weeks[weekId];
+        const nextSessionNum = week.sessions.length + 1;
+        const sessionId = `Día ${nextSessionNum}`;
+        const newSession = {
+            session_id: sessionId,
+            title: "Nueva Sesión Ad-Hoc",
+            goal_summary: "Sesión añadida manualmente",
+            session_completion: { status: 'pending', started_at: null, completed_at: null },
+            session_notes: "",
+            exercises: []
+        };
+        week.sessions.push(newSession);
+        utils.save(db);
+        ui.toast("✓ Sesión añadida");
+        ui.render();
+    },
+    createWeekFromImport: (json) => {
+        const validated = validate.json(JSON.stringify(json));
+        const weekId = validated.week_ref.week_id || utils.uuid();
+        validated.week_ref.week_id = weekId;
+
+        const processedSessions = validated.sessions.map(s => ({
+            ...s,
+            session_completion: s.session_completion || { status: 'pending', started_at: null, completed_at: null },
+            session_notes: s.session_notes || "",
+            exercises: s.exercises.map(e => ({
+                ...e,
+                override: null,
+                execution: { sets: [] },
+                completion: { status: 'pending', completed_at: null },
+                notes: ""
+            }))
+        }));
+        
+        let newWeekObj = { week: validated.week_ref, sessions: processedSessions, generated_at: validated.generated_at || utils.isoNow() };
+
+        if (db.weeks[weekId]) {
+            const existingWeek = db.weeks[weekId];
+            newWeekObj = logic.mergeWeeks(existingWeek, newWeekObj);
+            ui.toast(`✓ Datos fusionados con Semana ${validated.week_ref.week_number}`);
+        } else {
+             ui.toast("✓ Nueva semana importada");
+        }
+
+        db.weeks[weekId] = newWeekObj;
+        utils.save(db);
+        return weekId;
+    },
+    getWeek: (id) => db.weeks[id],
+    getSession: (wId, sId) => db.weeks[wId]?.sessions.find(s => s.session_id === sId),
+    getExercise: (wId, sId, exId) => logic.getSession(wId, sId)?.exercises.find(e => e.exercise_id === exId),
+    getResolvedPlan: (ex) => {
+        if (ex.override) {
+            const sets = [];
+            for (let i = 0; i < ex.override.planned_sets; i++) {
+                sets.push({ set_index: i, reps: ex.override.planned_reps, load: ex.override.planned_load, unit: 'kg', source: 'override' });
+            }
+            return sets;
+        }
+        if (ex.baseline && ex.baseline.set_plan && Array.isArray(ex.baseline.set_plan)) {
+            return ex.baseline.set_plan.map(s => ({ ...s, source: 'baseline' }));
+        }
+        if (ex.baseline && ex.baseline.planned_sets) {
+            const sets = [];
+            for(let i=0; i<ex.baseline.planned_sets; i++) {
+                sets.push({ set_index: i, reps: ex.baseline.planned_reps, load: ex.baseline.planned_load, unit: 'kg', source: 'baseline_flat'});
+            }
+            return sets;
+        }
+        return [];
+    },
+    startSession: (wId, sId) => {
+        const s = logic.getSession(wId, sId);
+        if (s.session_completion.status === 'pending') {
+            s.session_completion.status = 'in_progress';
+            s.session_completion.started_at = utils.isoNow();
+            utils.save(db);
+            wakeLock.request();
+        }
+    },
+    finishSession: (wId, sId) => {
+        const s = logic.getSession(wId, sId);
+        s.session_completion.status = 'completed';
+        s.session_completion.completed_at = utils.isoNow();
+        utils.save(db);
+        wakeLock.release();
+        return logic.generateReport(wId, sId);
+    },
+    updateSet: (wId, sId, exId, setIndex, data) => {
+        const ex = logic.getExercise(wId, sId, exId);
+        while(ex.execution.sets.length <= setIndex) {
+            ex.execution.sets.push({ reps: null, load: null, rir: null, notes: "" });
+        }
+        const set = ex.execution.sets[setIndex];
+        if (data.reps !== undefined) set.reps = data.reps;
+        if (data.load !== undefined) set.load = data.load;
+        if (data.rir !== undefined) set.rir = data.rir;
+        if (data.notes !== undefined) set.notes = data.notes;
+        set.completed_at = utils.isoNow();
+        utils.save(db);
+    },
+    updateExerciseNote: (wId, sId, exId, text) => {
+        const ex = logic.getExercise(wId, sId, exId);
+        ex.notes = text;
+        utils.save(db);
+    },
+    updateSessionNote: (wId, sId, text) => {
+        const s = logic.getSession(wId, sId);
+        s.session_notes = text;
+        utils.save(db);
+    },
+    addSet: (wId, sId, exId) => {
+        const ex = logic.getExercise(wId, sId, exId);
+        ex.execution.sets.push({ reps: 0, load: 0, rir: null, notes: "", is_extra: true });
+        utils.save(db);
+        ui.render();
+    },
+    applyFlatOverride: (wId, sId, exId, sets, reps, load) => {
+        try {
+            const ex = logic.getExercise(wId, sId, exId);
+            const validSets = validate.number(sets, 1, 20, 'Sets');
+            const validReps = validate.number(reps, 1, 100, 'Reps');
+            const validLoad = validate.number(load, 0, 1000, 'Carga');
+            ex.override = { planned_sets: validSets, planned_reps: validReps, planned_load: validLoad };
+            utils.save(db);
+            ui.toast('✓ Plan actualizado');
+            ui.render();
+        } catch(e) { }
+    },
+    toggleComplete: (wId, sId, exId) => {
+        const ex = logic.getExercise(wId, sId, exId);
+        ex.completion.status = ex.completion.status === 'completed' ? 'pending' : 'completed';
+        if(ex.completion.status === 'completed') ex.completion.completed_at = utils.isoNow();
+        utils.save(db);
+        ui.render();
+    },
+    addNewExerciseToSession: (wId, sId) => {
+        const name = prompt("Nombre del nuevo ejercicio:");
+        if(!name || name.trim() === '') return;
+        const s = logic.getSession(wId, sId);
+        const newEx = {
+            exercise_id: utils.uuid(),
+            name: name.trim(),
+            machine_name: "Ad-hoc",
+            baseline: { planned_sets: 3, planned_reps: 10, planned_load: 10 },
+            override: null,
+            execution: { sets: [] },
+            completion: { status: 'pending' },
+            notes: ""
+        };
+        s.exercises.push(newEx);
+        utils.save(db);
+        ui.render();
+        ui.toast("✓ Ejercicio añadido");
+    },
+    generateReport: (wId, sId) => {
+        const w = logic.getWeek(wId);
+        const s = logic.getSession(wId, sId);
+        return {
+            schema_version: "1.0",
+            week_ref: w.week,
+            session_result: s,
+            export_meta: { date: utils.isoNow() }
+        };
+    },
+    deleteWeek: (id) => {
+        const w = logic.getWeek(id);
+        const hasCompleted = w.sessions.some(s => s.session_completion.status === 'completed');
+        if (hasCompleted) {
+            if (!confirm(`⚠️ La semana ${w.week.week_number} tiene sesiones completadas.\n\n¿Borrar?`)) return;
+        }
+        if(confirm(`¿Borrar semana ${w.week.week_number}?`)) {
+            delete db.weeks[id];
+            utils.save(db);
+            actions.goHome();
+            ui.toast('✓ Semana eliminada');
+        }
+    },
+    getNextExercise: (wId, sId, currentExId) => {
+        const s = logic.getSession(wId, sId);
+        const currentIdx = s.exercises.findIndex(e => e.exercise_id === currentExId);
+        if (currentIdx === -1 || currentIdx === s.exercises.length - 1) return null;
+        return s.exercises[currentIdx + 1];
+    }
+};
+
+const ui = {
+    app: document.getElementById('app'),
+    toast: (msg) => {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    },
+    getThemeIcon: () => document.body.className === 'dark' ? '☀️' : '🌙',
+    render: () => {
+        ui.app.innerHTML = '';
+        if (state.setModal) { ui.renderSetModal(); return; }
+        if (state.modal) { ui.renderModal(); return; }
+        switch (state.view) {
+            case 'home': ui.renderHome(); break;
+            case 'week': ui.renderWeek(); break;
+            case 'session': ui.renderSession(); break;
+            case 'exercise': ui.renderExercise(); break;
+            case 'history': ui.renderHistory(); break;
+            case 'exercise_history': ui.renderExerciseHistory(); break;
+        }
+    },
+    renderHome: () => {
+        const weeks = Object.values(db.weeks).sort((a,b) => b.week.week_number - a.week.week_number);
+        ui.app.innerHTML = `
+            <header>
+                <h1>Strength Tracker</h1>
+                <div class="flex gap-s">
+                    <button class="icon-btn ghost" onclick="actions.openHistory()" title="Historial">📊</button>
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
+                    <button class="icon-btn ghost" onclick="actions.openBackups()" title="Backups">💾</button>
+                    <button class="primary small" onclick="actions.openImport()">Importar</button>
+                </div>
+            </header>
+            <div class="container">
+                <div class="flex justify-between align-center mb-m">
+                    <h2 class="mb-m">Mis Planes</h2>
+                    <button class="secondary small" onclick="logic.createManualWeek()">+ Crear Semana Vacía</button>
+                </div>
+                <div class="flex-col gap-m">
+                    ${weeks.length === 0 ? '<div class="card text-center text-muted">No hay planes. Crea uno nuevo o importa JSON.</div>' : ''}
+                    ${weeks.map(w => `
+                        <div class="card" onclick="actions.openWeek('${w.week.week_id}')">
+                            <div class="flex justify-between">
+                                <h3>Semana ${w.week.week_number}</h3>
+                                <span class="text-small mono opacity-50">${w.week.source || 'Manual'}</span>
+                            </div>
+                            <p class="text-small mt-m">${w.week.notes || 'Sin notas'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    },
+    renderWeek: () => {
+        const w = logic.getWeek(state.activeWeekId);
+        if(!w) return actions.goHome();
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.goHome()">← Volver</button>
+                <h3>S ${w.week.week_number}</h3>
+                <div class="flex gap-s">
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
+                    <button class="secondary small" onclick="actions.exportWeek()">JSON</button>
+                </div>
+            </header>
+            <div class="container">
+                <div class="flex justify-between mb-m">
+                    <span class="text-small text-muted">ID: ${w.week.week_id.slice(0,8)}...</span>
+                    <button class="danger small" onclick="logic.deleteWeek('${w.week.week_id}')">Borrar</button>
+                </div>
+                ${w.sessions.length === 0 ? '<div class="card text-center text-muted">Semana vacía</div>' : ''}
+                ${w.sessions.map(s => {
+                    const st = s.session_completion.status;
+                    return `
+                    <div class="card ${st === 'in_progress' ? 'active' : ''}">
+                        <div class="flex justify-between mb-m">
+                            <h3>${s.session_id} • ${s.title || 'Entreno'}</h3>
+                            <span class="badge ${st}">${st.replace('_', ' ')}</span>
+                        </div>
+                        <p class="text-small mb-m">${s.goal_summary || ''}</p>
+                        <button class="primary w-full" onclick="actions.openSession('${s.session_id}')">
+                            ${st === 'completed' ? 'Ver Resultados' : 'Abrir Sesión'}
+                        </button>
+                    </div>`;
+                }).join('')}
+                <button class="secondary w-full mt-m" onclick="logic.addSessionToWeek('${w.week.week_id}')">
+                    + Añadir Día (Ad-hoc)
+                </button>
+            </div>
+        `;
+    },
+    renderSession: () => {
+        const wId = state.activeWeekId;
+        const sId = state.activeSessionId;
+        const s = logic.getSession(wId, sId);
+        const locked = s.session_completion.status === 'completed';
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.openWeek('${wId}')">← Semana</button>
+                <h3>Sesión ${sId}</h3>
+                <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
+            </header>
+            <div class="container">
+                <div class="mb-m">
+                    <h2>${s.title || 'Sin Título'}</h2>
+                    <p class="text-small text-muted">Duración: ~${s.estimated_duration_min || '?'} min</p>
+                </div>
+                ${s.exercises.map(ex => {
+                    const plan = logic.getResolvedPlan(ex);
+                    const setsDone = ex.execution.sets.filter(x => x.reps > 0).length;
+                    const totalSets = plan.length;
+                    const done = ex.completion.status === 'completed';
+                    return `
+                    <div class="card" style="border-left: 4px solid ${done ? 'var(--accent)' : 'transparent'}">
+                        <div class="flex justify-between">
+                            <h3 style="${done ? 'opacity:0.6':''}">${ex.name}</h3>
+                            ${ex.target_1rm ? `<span class="badge">1RM: ${ex.target_1rm.value}</span>` : ''}
+                        </div>
+                        <div class="text-small text-muted mt-m mb-m">
+                            ${ex.equipment_csv_name || ex.machine_name || 'General'}
+                        </div>
+                        <div class="flex justify-between align-center">
+                            <span class="text-small font-bold">${setsDone} / ${totalSets} Sets</span>
+                            <button class="primary small" onclick="actions.openExercise('${ex.exercise_id}')">
+                                ${done ? 'Revisar' : 'Entrenar'}
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('')}
+                ${!locked ? `
+                    <button class="secondary w-full mb-m" onclick="logic.addNewExerciseToSession('${wId}','${sId}')">
+                        + Añadir Ejercicio Extra
+                    </button>
+                ` : ''}
+                ${!locked ? `
+                    <div class="card">
+                        <label class="text-small text-muted mb-m display-block">Notas de la sesión</label>
+                        <textarea rows="3" placeholder="Cómo te sentiste..." 
+                            onchange="logic.updateSessionNote('${wId}','${sId}', this.value)">${s.session_notes || ''}</textarea>
+                    </div>
+                ` : (s.session_notes ? `
+                    <div class="card">
+                        <label class="text-small text-muted mb-m display-block">Notas de la sesión</label>
+                        <p class="text-small">${s.session_notes}</p>
+                    </div>
+                ` : '')}
+                <div class="mt-m pt-m" style="border-top:1px solid var(--border)">
+                    ${locked 
+                        ? `<button class="secondary w-full" onclick="actions.viewReport()">Ver Reporte JSON</button>`
+                        : `<button class="primary w-full" onclick="actions.finishSession()">Finalizar Sesión</button>`
+                    }
+                </div>
+            </div>
+        `;
+    },
+    renderExercise: () => {
+        const wId = state.activeWeekId;
+        const sId = state.activeSessionId;
+        const exId = state.activeExerciseId;
+        const ex = logic.getExercise(wId, sId, exId);
+        const session = logic.getSession(wId, sId);
+        const locked = session.session_completion.status === 'completed';
+        const planArr = logic.getResolvedPlan(ex);
+        const execArr = ex.execution.sets;
+        const totalRows = Math.max(planArr.length, execArr.length);
+        const lastPlan = planArr.length > 0 ? planArr[planArr.length - 1] : { reps: 10, load: 20 };
+        const nextEx = logic.getNextExercise(wId, sId, exId);
+        
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.openSession('${sId}')">← Volver</button>
+                <button class="${ex.completion.status === 'completed' ? 'secondary' : 'ghost'}" onclick="logic.toggleComplete('${wId}','${sId}','${exId}')">
+                    ${ex.completion.status === 'completed' ? '✔ Hecho' : 'Marcar Fin'}
+                </button>
+            </header>
+            <div class="container">
+                <div class="flex justify-between align-center mb-m">
+                    <h2>${ex.name}</h2>
+                    <button class="secondary small" onclick="actions.openExerciseHistory('${ex.name}')">
+                        📊 Historial
+                    </button>
+                </div>
+                ${ex.recommendations ? `<p class="text-small card mb-m" style="background: var(--bg-input); padding: 12px;">${ex.recommendations}</p>` : ''}
+                ${!locked ? `
+                <details class="mb-m">
+                    <summary class="text-small text-muted" style="cursor:pointer; padding: 10px 0;">⚙️ Ajustar Plan</summary>
+                    <div class="card mt-m">
+                        <div class="flex gap-s">
+                            <input id="ov_sets" type="number" inputmode="numeric" placeholder="Sets" value="${planArr.length}">
+                            <input id="ov_reps" type="number" inputmode="numeric" placeholder="Reps" value="${lastPlan.reps}">
+                            <input id="ov_load" type="number" inputmode="decimal" placeholder="Kg" value="${lastPlan.load}" step="0.5">
+                        </div>
+                        <button class="primary w-full mt-m" onclick="
+                            logic.applyFlatOverride('${wId}','${sId}','${exId}', 
+                            document.getElementById('ov_sets').value, 
+                            document.getElementById('ov_reps').value, 
+                            document.getElementById('ov_load').value)
+                        ">Aplicar Nuevo Plan</button>
+                    </div>
+                </details>` : ''}
+                
+                <div class="card">
+                    <div class="set-row header">
+                        <div class="text-center">#</div>
+                        <div class="text-center" style="border-right:1px solid var(--border)">Plan</div>
+                        <div class="text-center">Real (Reps/Kg)</div>
+                        <div class="text-center"></div>
+                    </div>
+                    ${Array.from({length: totalRows}).map((_, i) => {
+                        const p = planArr[i] || { reps: '-', load: '-', unit: '' };
+                        const e = execArr[i] || { reps: null, load: null };
+                        const showReps = (e.reps !== null && e.reps !== '') ? e.reps : (p.reps !== '-' ? p.reps : '');
+                        const showLoad = (e.load !== null && e.load !== '') ? e.load : (p.load !== '-' ? p.load : '');
+                        const isDone = e.reps !== null;
+                        return `
+                        <div class="set-row">
+                            <div class="text-center font-bold text-muted">${i+1}</div>
+                            <div class="plan-col">
+                                <span style="font-size:1.1rem; font-weight:700">${p.reps}</span>
+                                <span class="text-small text-muted">${p.load}</span>
+                            </div>
+                            <div class="flex gap-s">
+                                <input type="number" inputmode="numeric" id="reps_${i}" class="stat-input" placeholder="Reps"
+                                    value="${showReps}" ${locked ? 'disabled' : ''}
+                                    onchange="logic.updateSet('${wId}','${sId}','${exId}', ${i}, {reps: this.value});">
+                                <input type="number" inputmode="decimal" step="0.5" id="load_${i}" class="stat-input" placeholder="Kg"
+                                    value="${showLoad}" ${locked ? 'disabled' : ''}
+                                    onchange="logic.updateSet('${wId}','${sId}','${exId}', ${i}, {load: this.value});">
+                            </div>
+                            <div class="flex justify-center">
+                                <button class="icon-btn check-btn ${isDone ? 'done' : ''}" 
+                                    onclick="actions.openSetModal('${wId}','${sId}','${exId}', ${i})">
+                                    ${isDone ? '✔' : '○'}
+                                </button>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                    ${!locked ? `<button class="ghost w-full mt-m" onclick="logic.addSet('${wId}','${sId}','${exId}')">+ Set Extra</button>` : ''}
+                </div>
+                
+                <div class="card">
+                    <label class="text-small text-muted mb-m display-block">Notas del Ejercicio</label>
+                    <textarea rows="3" placeholder="Sensaciones, ajustes..." ${locked ? 'disabled' : ''}
+                        onchange="logic.updateExerciseNote('${wId}','${sId}','${exId}', this.value)">${ex.notes || ''}</textarea>
+                </div>
+                
+                ${!locked && nextEx ? `
+                    <button class="primary w-full mt-m" onclick="actions.openExercise('${nextEx.exercise_id}')">
+                        Siguiente: ${nextEx.name} →
+                    </button>
+                ` : ''}
+                ${!locked && !nextEx ? `
+                    <button class="secondary w-full mt-m" onclick="actions.openSession('${sId}')">
+                        ← Volver a Sesión
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    },
+    renderHistory: () => {
+        const exercises = analytics.getAllExercises();
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.goHome()">← Volver</button>
+                <h3>Historial</h3>
+                <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
+            </header>
+            <div class="container">
+                <div class="flex justify-between align-center mb-m">
+                    <h2 class="mb-m">Progreso</h2>
+                    <button class="secondary small" onclick="actions.exportAllRMs()">📥 Exportar Todo</button>
+                </div>
+                ${exercises.length === 0 ? `
+                    <div class="card text-center text-muted">
+                        No hay datos de ejercicios completados.
+                    </div>
+                ` : ''}
+                ${exercises.map(exName => {
+                    const best1RM = analytics.getBest1RM(exName);
+                    const history = analytics.getExerciseHistory(exName);
+                    const lastSession = history[0];
+                    return `
+                        <div class="card" onclick="actions.openExerciseHistory('${exName}')">
+                            <div class="flex justify-between align-center mb-m">
+                                <h3>${exName}</h3>
+                                ${best1RM ? `<span class="rm-badge">${best1RM} kg</span>` : ''}
+                            </div>
+                            <div class="text-small text-muted">
+                                ${lastSession ? `Último: ${utils.formatDate(lastSession.date)} - ${lastSession.load}kg × ${lastSession.reps}` : 'Sin datos'}
+                            </div>
+                            <div class="text-small text-muted mt-m">
+                                ${history.length} ${history.length === 1 ? 'serie' : 'series'} registradas
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+    renderExerciseHistory: () => {
+        const exName = state.historyExercise;
+        const records = analytics.get1RMRecords(exName);
+        const monthlySummary = analytics.get1RMMonthlySummary(exName);
+        const recentSets = analytics.getRecentSets(exName, 30);
+        const best1RM = analytics.getBest1RM(exName);
+
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.openHistory()">← Historial</button>
+                <h3>Progreso</h3>
+                <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
+            </header>
+            <div class="container">
+                <div class="card">
+                    <h2 class="mb-m">${exName}</h2>
+                    ${best1RM ? `
+                        <div class="flex justify-between align-center mb-m">
+                            <span class="text-small text-muted">Mejor 1RM Estimado</span>
+                            <span class="rm-badge" style="font-size: 1.1rem;">${best1RM} kg</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <details class="mb-m" open>
+                    <summary>📈 Evolución de 1RM (Récords)</summary>
+                    <div class="card mt-m">
+                        ${records.length === 0 ? '<p class="text-small text-muted text-center">Sin récords aún</p>' : ''}
+                        ${records.map((r, idx) => `
+                            <div class="flex justify-between align-center" style="padding: 12px 0; ${idx < records.length - 1 ? 'border-bottom: 1px solid var(--border);' : ''}">
+                                <div>
+                                    <div class="font-bold">${r.value} kg</div>
+                                    <div class="text-small text-muted">${utils.formatDate(r.date)}</div>
+                                </div>
+                                <div class="text-small">
+                                    ${r.load}kg × ${r.reps}
+                                    ${r.improvement > 0 ? `<span style="color: var(--accent)"> (+${r.improvement.toFixed(1)})</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </details>
+                
+                <details class="mb-m">
+                    <summary>📅 Resumen Mensual (Mejor 1RM)</summary>
+                    <div class="card mt-m">
+                        ${monthlySummary.length === 0 ? '<p class="text-small text-muted text-center">Sin datos mensuales</p>' : ''}
+                        ${monthlySummary.map((m, idx) => `
+                            <div class="flex justify-between align-center" style="padding: 12px 0; ${idx < monthlySummary.length - 1 ? 'border-bottom: 1px solid var(--border);' : ''}">
+                                <div>
+                                    <div class="font-bold">${utils.formatMonth(m.month)}</div>
+                                    <div class="text-small text-muted">${utils.formatDate(m.date)}</div>
+                                </div>
+                                <div class="text-small">
+                                    <span class="rm-badge">${m.value} kg</span>
+                                    <div class="text-muted">${m.load}kg × ${m.reps}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </details>
+
+                <details class="mb-m" open>
+                    <summary>🗓️ Sets Recientes (último mes)</summary>
+                    <div class="card mt-m">
+                        ${recentSets.length === 0 ? '<p class="text-small text-muted text-center">Sin sets recientes</p>' : ''}
+                        <table class="progress-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Set</th>
+                                    <th>Reps</th>
+                                    <th>Kg</th>
+                                    <th>1RM</th>
+                                    <th>RIR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${recentSets.map(h => `
+                                    <tr>
+                                        <td class="text-small">${utils.formatDate(h.date)}</td>
+                                        <td>${h.setIndex}</td>
+                                        <td><strong>${h.reps}</strong></td>
+                                        <td><strong>${h.load}</strong></td>
+                                        <td class="text-small text-muted">${h.estimated1RM || '-'}</td>
+                                        <td class="text-small">${h.rir !== null ? h.rir : '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                <div class="card">
+                    <h3 class="mb-m">Exportar Histórico Completo</h3>
+                    <div class="export-row">
+                        <button class="secondary" onclick="actions.exportExerciseCSV('${exName}')">
+                            📊 CSV
+                        </button>
+                        <button class="secondary" onclick="actions.exportExerciseJSON('${exName}')">
+                            📄 JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    renderModal: () => {
+        if (state.modal === 'import') {
+            ui.app.innerHTML = `
+                <div class="modal-overlay" onclick="event.target === this && actions.closeModal()">
+                    <div class="modal-content">
+                        <h3>Importar JSON</h3>
+                        <p class="text-small mb-m">Elige una opción:</p>
+                        <button class="primary w-full mb-m" onclick="actions.pasteFromClipboard()">
+                            📋 Pegar desde portapapeles
+                        </button>
+                        <div class="divider">o</div>
+                        <div class="file-input-wrapper">
+                            <div class="text-small">📂 Seleccionar archivo</div>
+                            <input type="file" accept="*/*" id="fileUpload" onchange="actions.handleFileSelect(this)">
+                        </div>
+                        <div class="divider">o</div>
+                        <textarea id="jsonInput" rows="5" placeholder='Pegar JSON aquí...'></textarea>
+                        <div class="flex gap-s mt-m">
+                            <button class="ghost w-full" onclick="actions.closeModal()">Cancelar</button>
+                            <button class="primary w-full" onclick="actions.doImport()">Importar</button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+        if (state.modal === 'backups') {
+            const backupList = backup.list();
+            ui.app.innerHTML = `
+                <div class="modal-overlay" onclick="event.target === this && actions.closeModal()">
+                    <div class="modal-content">
+                        <h3>Gestión de Backups</h3>
+                        <p class="text-small mb-m">Backups automáticos (últimos 5):</p>
+                        ${backupList.length === 0 ? `
+                            <div class="card text-center text-muted">
+                                No hay backups disponibles.
+                            </div>
+                        ` : `
+                            <button class="secondary w-full mb-m" onclick="backup.downloadAll()">
+                                📥 Descargar TODOS los backups
+                            </button>
+                            <div class="flex-col gap-s mb-m">
+                                ${backupList.map(date => `
+                                    <div class="card">
+                                        <div class="flex justify-between align-center mb-m">
+                                            <span class="font-bold">${utils.formatDate(date)}</span>
+                                        </div>
+                                        <div class="flex gap-s">
+                                            <button class="secondary w-full" onclick="backup.restore('${date}')">
+                                                Restaurar
+                                            </button>
+                                            <button class="primary w-full" onclick="backup.download('${date}')">
+                                                📥 Bajar
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `}
+                        <div class="section-header">Restaurar desde archivo</div>
+                        <button class="primary w-full mb-m" onclick="actions.pasteBackupFromClipboard()">
+                            📋 Pegar backup desde portapapeles
+                        </button>
+                        <div class="divider">o</div>
+                        <div class="file-input-wrapper">
+                            <div class="text-small">📂 Seleccionar archivo backup</div>
+                            <input type="file" accept="*/*" id="backupFileUpload" onchange="actions.handleBackupFileSelect(this)">
+                        </div>
+                        <div class="divider">o</div>
+                        <textarea id="backupJsonInput" rows="4" placeholder='Pegar JSON del backup...'></textarea>
+                        <div class="flex-col gap-s mt-m mb-m">
+                            <button class="primary w-full" onclick="actions.restoreFromBackupJSON('merge')">
+                                🔄 Fusionar con Datos Actuales
+                                <div class="text-small" style="font-weight:normal; margin-top:2px; opacity:0.9">No borra nada. Suma datos nuevos.</div>
+                            </button>
+                            <button class="danger w-full" onclick="actions.restoreFromBackupJSON('replace')">
+                                ⚠️ Sobrescribir Todo
+                                <div class="text-small" style="font-weight:normal; margin-top:2px; opacity:0.9">Borra datos actuales y pone el backup.</div>
+                            </button>
+                        </div>
+                        <button class="ghost w-full" onclick="actions.closeModal()">Cerrar</button>
+                    </div>
+                </div>`;
+        }
+        if (state.modal === 'export_all_rms') {
+            const exercises = analytics.getAllExercises();
+            const totalExercises = exercises.length;
+            ui.app.innerHTML = `
+                <div class="modal-overlay" onclick="event.target === this && actions.closeModal()">
+                    <div class="modal-content">
+                        <h3>Exportar Todos los 1RM</h3>
+                        <p class="text-small mb-m">${totalExercises} ejercicios encontrados</p>
+                        <div class="card">
+                            <h3 class="mb-m">Formato</h3>
+                            <div class="flex-col gap-s">
+                                <button class="primary w-full" onclick="actions.downloadAll1RMsJSON()">
+                                    📄 JSON Completo
+                                    <div class="text-small" style="font-weight: normal; margin-top: 4px;">
+                                        Incluye todos los récords y resumen mensual
+                                    </div>
+                                </button>
+                                <button class="secondary w-full" onclick="actions.downloadAll1RMsCSV()">
+                                    📊 CSV Resumen
+                                    <div class="text-small" style="font-weight: normal; margin-top: 4px;">
+                                        Tabla con mejores marcas por ejercicio
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="ghost w-full mt-m" onclick="actions.closeModal()">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>`;
+        }
+    },
+    renderSetModal: () => {
+        const { wId, sId, exId, setIndex, currentReps, currentLoad } = state.setModal;
+        const ex = logic.getExercise(wId, sId, exId);
+        const set = ex.execution.sets[setIndex] || { reps: null, load: null, rir: null, notes: "" };
+        const planArr = logic.getResolvedPlan(ex);
+        const totalSets = planArr.length;
+        
+        // Prioridad: 1. Valor pasado (lo que escribiste) 2. Valor en BD 3. Vacío
+        const reps = currentReps !== undefined ? currentReps : (set.reps || '');
+        const load = currentLoad !== undefined ? currentLoad : (set.load || '');
+
+        ui.app.innerHTML = `
+            <div class="modal-overlay" onclick="event.target === this && actions.closeSetModal()">
+                <div class="modal-content">
+                    <h3>✓ Guardar Set ${setIndex + 1} de ${totalSets}</h3>
+                    <div class="card mt-m">
+                        <div class="flex gap-s mb-m">
+                            <div class="flex-col w-full">
+                                <label class="text-small text-muted mb-m">Reps</label>
+                                <input id="modal_reps" type="number" inputmode="numeric" value="${reps}">
+                            </div>
+                            <div class="flex-col w-full">
+                                <label class="text-small text-muted mb-m">Carga (kg)</label>
+                                <input id="modal_load" type="number" inputmode="decimal" step="0.5" value="${load}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <label class="text-small text-muted mb-m display-block">¿Cuántas repeticiones te quedaban? (RIR)</label>
+                        <div class="rir-selector">
+                            <button class="rir-btn ${(set.rir !== null && set.rir !== undefined) ? (set.rir === 0 ? 'selected' : '') : (lastRIR === 0 ? 'selected' : '')}" onclick="actions.selectRIR(0)">0</button>
+                            <button class="rir-btn ${(set.rir !== null && set.rir !== undefined) ? (set.rir === 1 ? 'selected' : '') : (lastRIR === 1 ? 'selected' : '')}" onclick="actions.selectRIR(1)">1</button>
+                            <button class="rir-btn ${(set.rir !== null && set.rir !== undefined) ? (set.rir === 2 ? 'selected' : '') : (lastRIR === 2 ? 'selected' : '')}" onclick="actions.selectRIR(2)">2</button>
+                            <button class="rir-btn ${(set.rir !== null && set.rir !== undefined) ? (set.rir === 3 ? 'selected' : '') : (lastRIR === 3 ? 'selected' : '')}" onclick="actions.selectRIR(3)">3</button>
+                            <button class="rir-btn ${(set.rir !== null && set.rir !== undefined) ? (set.rir === 4 ? 'selected' : '') : (lastRIR === 4 ? 'selected' : '')}" onclick="actions.selectRIR(4)">4+</button>
+                        </div>
+                        <div class="flex justify-between text-small text-muted" style="margin-top: 8px;">
+                            <span>Fallo</span>
+                            <span>Reserva</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <label class="text-small text-muted mb-m display-block">Nota (opcional)</label>
+                        <textarea id="modal_notes" rows="2" placeholder="Técnica, sensaciones...">${set.notes || ''}</textarea>
+                    </div>
+                    <div class="flex-col gap-s mt-m">
+                        <button class="primary w-full" onclick="actions.saveSetWithRIR()">
+                            ✓ Guardar
+                        </button>
+                        <button class="ghost w-full" onclick="actions.saveSetWithoutRIR()">
+                            Guardar sin RIR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+};
+
+const actions = {
+    goHome: () => {
+        state.view = 'home';
+        state.activeWeekId = null;
+        state.activeSessionId = null;
+        state.activeExerciseId = null;
+        wakeLock.release();
+        ui.render();
+    },
+    openWeek: (id) => {
+        state.activeWeekId = id;
+        state.view = 'week';
+        ui.render();
+    },
+    openSession: (id) => {
+        state.activeSessionId = id;
+        state.view = 'session';
+        logic.startSession(state.activeWeekId, id);
+        ui.render();
+    },
+    openExercise: (id) => {
+        state.activeExerciseId = id;
+        state.view = 'exercise';
+        ui.render();
+    },
+    openHistory: () => {
+        state.view = 'history';
+        ui.render();
+    },
+    openExerciseHistory: (exerciseName) => {
+        state.historyExercise = exerciseName;
+        state.view = 'exercise_history';
+        ui.render();
+    },
+    openImport: () => {
+        state.modal = 'import';
+        ui.render();
+    },
+    openBackups: () => {
+        state.modal = 'backups';
+        ui.render();
+    },
+    closeModal: () => {
+        state.modal = null;
+        ui.render();
+    },
+    // Captura valores antes de cambiar la vista (mantiene pre-carga)
+    openSetModal: (wId, sId, exId, setIndex) => {
+        const repsInput = document.getElementById(`reps_${setIndex}`);
+        const loadInput = document.getElementById(`load_${setIndex}`);
+        const currentReps = repsInput ? repsInput.value : undefined;
+        const currentLoad = loadInput ? loadInput.value : undefined;
+
+        state.setModal = { wId, sId, exId, setIndex, currentReps, currentLoad };
+        ui.render();
+    },
+    closeSetModal: () => {
+        state.setModal = null;
+        ui.render();
+    },
+    selectRIR: (value) => {
+        document.querySelectorAll('.rir-btn').forEach(btn => btn.classList.remove('selected'));
+        event.target.classList.add('selected');
+        state.selectedRIR = value;
+        lastRIR = value; 
+    },
+    saveSetWithoutRIR: () => {
+        const { wId, sId, exId, setIndex } = state.setModal;
+        const reps = document.getElementById('modal_reps').value;
+        const load = document.getElementById('modal_load').value;
+        const notes = document.getElementById('modal_notes').value;
+
+        if (!reps || !load) {
+            ui.toast('⚠️ Completa reps y carga');
+            return;
+        }
+        
+        logic.updateSet(wId, sId, exId, setIndex, {
+            reps: parseFloat(reps),
+            load: parseFloat(load),
+            rir: null,
+            notes: notes
+        });
+        state.setModal = null;
+        ui.toast('✓ Set guardado');
+        ui.render();
+    },
+    saveSetWithRIR: () => {
+        const { wId, sId, exId, setIndex } = state.setModal;
+        const reps = document.getElementById('modal_reps').value;
+        const load = document.getElementById('modal_load').value;
+        const notes = document.getElementById('modal_notes').value;
+        const selectedBtn = document.querySelector('.rir-btn.selected');
+        const rir = selectedBtn ? parseInt(selectedBtn.textContent) : null;
+        
+        if (!reps || !load) {
+            ui.toast('⚠️ Completa reps y carga');
+            return;
+        }
+        
+        logic.updateSet(wId, sId, exId, setIndex, {
+            reps: parseFloat(reps),
+            load: parseFloat(load),
+            rir: rir,
+            notes: notes
+        });
+        state.setModal = null;
+        ui.toast('✓ Set guardado');
+        ui.render();
+    },
+    pasteFromClipboard: async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text || text.trim() === '') {
+                ui.toast('⚠️ Portapapeles vacío');
+                return;
+            }
+            document.getElementById('jsonInput').value = text;
+            ui.toast('✓ Pegado');
+        } catch(err) {
+            ui.toast('⚠️ No se pudo acceder al portapapeles');
+        }
+    },
+    pasteBackupFromClipboard: async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text || text.trim() === '') {
+                ui.toast('⚠️ Portapapeles vacío');
+                return;
+            }
+            document.getElementById('backupJsonInput').value = text;
+            ui.toast('✓ Pegado');
+        } catch(err) {
+            ui.toast('⚠️ No se pudo acceder al portapapeles');
+        }
+    },
+    handleFileSelect: (input) => {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('jsonInput').value = e.target.result;
+            ui.toast("✓ Archivo cargado");
+        };
+        reader.onerror = () => ui.toast("⚠️ Error al leer archivo");
+        reader.readAsText(file);
+    },
+    handleBackupFileSelect: (input) => {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('backupJsonInput').value = e.target.result;
+            ui.toast("✓ Archivo cargado");
+        };
+        reader.onerror = () => ui.toast("⚠️ Error al leer archivo");
+        reader.readAsText(file);
+    },
+    doImport: () => {
+        try {
+            const val = document.getElementById('jsonInput').value;
+            if(!val.trim()) {
+                ui.toast("⚠️ Contenido vacío");
+                return;
+            }
+            const json = validate.json(val);
+            const res = logic.createWeekFromImport(json);
+            if (res) {
+                state.modal = null;
+                actions.openWeek(res);
+            }
+        } catch(e) {
+            ui.toast(`⚠️ ${e.message}`);
+        }
+    },
+    // Se ha modificado para aceptar 'mode' (merge/replace)
+    restoreFromBackupJSON: (mode) => {
+        const val = document.getElementById('backupJsonInput').value;
+        if(!val.trim()) {
+            ui.toast("⚠️ Contenido vacío");
+            return;
+        }
+        backup.restoreFromJSON(val, mode);
+    },
+    finishSession: () => {
+        const s = logic.getSession(state.activeWeekId, state.activeSessionId);
+        const incomplete = s.exercises.filter(e => e.completion.status !== 'completed');
+        if (incomplete.length > 0) {
+            if (!confirm(`⚠️ Hay ${incomplete.length} ejercicio(s) sin completar.\n\n¿Finalizar?`)) return;
+        }
+        if(confirm("✓ ¿Finalizar sesión?")) {
+            logic.finishSession(state.activeWeekId, state.activeSessionId);
+            actions.viewReport();
+        }
+    },
+    viewReport: () => {
+        const data = logic.generateReport(state.activeWeekId, state.activeSessionId);
+        utils.download(data, `report_${state.activeSessionId}_${new Date().toISOString().split('T')[0]}.json`);
+        ui.toast("✓ Reporte descargado");
+        actions.goHome();
+    },
+    exportWeek: () => {
+        const w = logic.getWeek(state.activeWeekId);
+        utils.download(w, `week_${w.week.week_number}_${new Date().toISOString().split('T')[0]}.json`);
+        ui.toast("✓ Semana exportada");
+    },
+    exportExerciseCSV: (exerciseName) => {
+        const csv = analytics.exportToCSV(exerciseName);
+        if (!csv) {
+            ui.toast('⚠️ No hay datos para exportar');
+            return;
+        }
+        utils.downloadCSV(csv, `${exerciseName.replace(/\s+/g, '_')}_history.csv`);
+        ui.toast('✓ CSV exportado');
+    },
+    exportExerciseJSON: (exerciseName) => {
+        const data = analytics.exportToJSON(exerciseName);
+        utils.download(data, `${exerciseName.replace(/\s+/g, '_')}_history.json`);
+        ui.toast('✓ JSON exportado');
+    },
+    exportAllRMs: () => {
+        state.modal = 'export_all_rms';
+        ui.render();
+    },
+    downloadAll1RMsJSON: () => {
+        const data = analytics.exportAll1RMs();
+        const today = new Date().toISOString().split('T')[0];
+        utils.download(data, `all_1RMs_${today}.json`);
+        ui.toast(`✓ ${data.total_exercises} ejercicios exportados`);
+        actions.closeModal();
+    },
+    downloadAll1RMsCSV: () => {
+        const csv = analytics.exportAll1RMsCSV();
+        const today = new Date().toISOString().split('T')[0];
+        utils.downloadCSV(csv, `all_1RMs_summary_${today}.csv`);
+        ui.toast('✓ CSV exportado');
+        actions.closeModal();
+    }
+};
+
+// GESTIÓN NATIVA BOTÓN ATRÁS (Android)
+const initAppListeners = async () => {
+    if (window.Capacitor) {
+        const { App } = Capacitor.Plugins;
+        await App.addListener('backButton', ({ canGoBack }) => {
+            if (state.modal || state.setModal) {
+                actions.closeModal(); actions.closeSetModal(); return;
+            }
+            switch (state.view) {
+                case 'exercise': actions.openSession(state.activeSessionId); break;
+                case 'session': actions.openWeek(state.activeWeekId); break;
+                case 'week': case 'history': actions.goHome(); break;
+                case 'home': App.exitApp(); break;
+                default: actions.goHome();
+            }
+        });
+    }
+};
+
+initAppListeners();
+utils.initTheme();
+ui.render();
+console.log('%c Strength Tracker v6.6 (CRUD + Merge)', 'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+</script>
+</body>
+</html>

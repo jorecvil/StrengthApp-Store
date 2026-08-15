@@ -1,0 +1,11 @@
+{
+  "appId": "com.strength.app",
+  "appName": "Strength Tracker",
+  "webDir": "www",
+  "backgroundColor": "#0f172a",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

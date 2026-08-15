@@ -1,0 +1,30 @@
+{
+  "name": "strengthapp-store",
+  "version": "1.0.0",
+  "description": "Strength Tracker - gestion de entrenamientos de gimnasio (web + Android via Capacitor). Offline-first.",
+  "main": "www/index.html",
+  "scripts": {
+    "sync": "npx cap sync",
+    "android:open": "npx cap open android",
+    "bundle": "cd android && ./gradlew bundleRelease",
+    "serve": "python3 -m http.server 4173 --directory www"
+  },
+  "keywords": [
+    "gym",
+    "strength",
+    "workout",
+    "tracker",
+    "capacitor"
+  ],
+  "author": "Jorge",
+  "license": "SEE LICENSE IN PRIVACY.md",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor/android": "8.0.1",
+    "@capacitor/app": "8.0.0",
+    "@capacitor/cli": "8.0.1",
+    "@capacitor/core": "8.0.0",
+    "@capacitor/filesystem": "8.0.0",
+    "@capacitor/share": "8.0.0"
+  }
+}
