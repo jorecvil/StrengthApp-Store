@@ -885,6 +885,67 @@ const analytics = {
         cutoffDate.setDate(cutoffDate.getDate() - days);
         return history.filter(s => new Date(s.date) >= cutoffDate);
     },
+    getGlobalBest1RM: () => {
+        let best = 0;
+        let bestExercise = null;
+        analytics.getAllExercises().forEach(ex => {
+            const exBest = analytics.getBest1RM(ex);
+            if (exBest !== null && exBest > best) {
+                best = exBest;
+                bestExercise = ex;
+            }
+        });
+        return best > 0 ? { value: best, exercise: bestExercise } : null;
+    },
+    getLastSessionDate: () => {
+        let latest = null;
+        Object.values(db.weeks).forEach(w => {
+            w.sessions.forEach(s => {
+                if (s.session_completion.status !== 'completed') return;
+                const dateStr = s.session_completion.completed_at || s.session_completion.started_at;
+                if (!dateStr) return;
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return;
+                if (!latest || d > latest.date) latest = { date: d, weekNumber: w.week.week_number, sessionId: s.session_id };
+            });
+        });
+        return latest;
+    },
+    getStreakDays: () => {
+        const dates = new Set();
+        Object.values(db.weeks).forEach(w => {
+            w.sessions.forEach(s => {
+                if (s.session_completion.status !== 'completed') return;
+                const dateStr = s.session_completion.completed_at || s.session_completion.started_at;
+                if (!dateStr) return;
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return;
+                dates.add(d.toISOString().split('T')[0]);
+            });
+        });
+        if (dates.size === 0) return 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const sortedDates = Array.from(dates).sort().reverse();
+        let streak = 0;
+        let cursor = new Date(today);
+        const mostRecent = new Date(sortedDates[0]);
+        if (mostRecent.getTime() === today.getTime() || mostRecent.getTime() === yesterday.getTime()) {
+            cursor = mostRecent;
+            streak = 1;
+            for (let i = 1; i < sortedDates.length; i++) {
+                const prev = new Date(sortedDates[i]);
+                const diff = (cursor - prev) / (1000 * 60 * 60 * 24);
+                if (Math.round(diff) === 1) {
+                    streak++;
+                    cursor = prev;
+                } else break;
+            }
+        }
+        return streak;
+    },
     getAllExercises: () => {
         const exercises = new Set();
         Object.values(db.weeks).forEach(w => {
@@ -1195,6 +1256,7 @@ const ui = {
         if (state.modal) { ui.renderModal(); return; }
         switch (state.view) {
             case 'home': ui.renderHome(); break;
+            case 'planes': ui.renderPlanes(); break;
             case 'week': ui.renderWeek(); break;
             case 'session': ui.renderSession(); break;
             case 'exercise': ui.renderExercise(); break;
@@ -1204,26 +1266,98 @@ const ui = {
         }
     },
     renderHome: () => {
-        const weeks = Object.values(db.weeks).sort((a,b) => b.week.week_number - a.week.week_number);
+        const streak = analytics.getStreakDays();
+        const lastSession = analytics.getLastSessionDate();
+        const globalBest = analytics.getGlobalBest1RM();
+
+        const streakLabel = streak === 0 ? 'Sin entrenar' :
+                            streak === 1 ? '1 día' : `${streak} días`;
+        const streakSub = streak > 0 ? '🔥 ¡Sigue así!' : 'Empieza hoy';
+        const lastLabel = lastSession ? utils.formatDate(lastSession.date) : '—';
+        const bestLabel = globalBest ? `${globalBest.value} kg` : '—';
+        const bestSub = globalBest ? utils.esc(globalBest.exercise || '') : 'Sin datos aún';
+
         ui.app.innerHTML = `
             <header>
                 <h1>Strength Tracker</h1>
                 <div class="flex gap-s">
-                    <button class="icon-btn ghost" onclick="actions.openHistory()" title="Historial">📊</button>
-                    <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
-                    <button class="icon-btn ghost" onclick="actions.openBackups()" title="Backups">💾</button>
-                    <button class="primary small" onclick="actions.openImport()">Importar</button>
+                    <button class="icon-btn ghost" onclick="actions.openHelp()" title="Ayuda" aria-label="Abrir ayuda">❓</button>
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">${ui.getThemeIcon()}</button>
+                </div>
+            </header>
+            <div class="container">
+                <section class="home-metrics" aria-label="Resumen de actividad">
+                    <div class="home-metric-card" role="group" aria-label="Racha actual">
+                        <div class="metric-label">Racha</div>
+                        <div class="metric-value">${streakLabel}</div>
+                        <div class="metric-sub">${streakSub}</div>
+                    </div>
+                    <div class="home-metric-card" role="group" aria-label="Última sesión">
+                        <div class="metric-label">Última sesión</div>
+                        <div class="metric-value">${lastLabel}</div>
+                        <div class="metric-sub">${streak > 0 ? 'Mantén la constancia' : 'Programa tu primer entreno'}</div>
+                    </div>
+                </section>
+
+                <section aria-label="Navegación principal">
+                    <button class="nav-card active" onclick="actions.openPlanes()" aria-label="Ir a Mis Planes">
+                        <div class="nav-card-icon" aria-hidden="true">📝</div>
+                        <div class="nav-card-content">
+                            <div class="nav-card-title">Mis Planes</div>
+                            <div class="nav-card-desc">Gestiona tus semanas y entrenamientos</div>
+                        </div>
+                    </button>
+                    <button class="nav-card" onclick="actions.openHistory()" aria-label="Ir a Historial de Ejercicios">
+                        <div class="nav-card-icon" aria-hidden="true">📊</div>
+                        <div class="nav-card-content">
+                            <div class="nav-card-title">Historial de Ejercicios</div>
+                            <div class="nav-card-desc">Consulta tu progreso y récords (1RM: ${bestLabel})</div>
+                        </div>
+                    </button>
+                    <button class="nav-card" onclick="actions.openAnalytics()" aria-label="Ir a Análisis de Esfuerzo">
+                        <div class="nav-card-icon" aria-hidden="true">📈</div>
+                        <div class="nav-card-content">
+                            <div class="nav-card-title">Análisis de Esfuerzo</div>
+                            <div class="nav-card-desc">${bestSub !== 'Sin datos aún' ? 'Mejor récord: ' + bestSub : 'Métricas de volumen, RPE y carga'}</div>
+                        </div>
+                    </button>
+                </section>
+
+                <div class="config-divider" role="separator" aria-label="Configuración">Configuración</div>
+
+                <section class="grid-2" aria-label="Configuración y datos">
+                    <button class="nav-card settings-card" onclick="actions.openBackups()" aria-label="Ir a Backups">
+                        <div class="nav-card-icon" aria-hidden="true">💾</div>
+                        <div class="nav-card-title">Backups</div>
+                    </button>
+                    <button class="nav-card settings-card" onclick="actions.openImport()" aria-label="Importar datos">
+                        <div class="nav-card-icon" aria-hidden="true">📥</div>
+                        <div class="nav-card-title">Importar</div>
+                    </button>
+                </section>
+            </div>
+            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Crear nueva semana">＋</button>
+        `;
+    },
+    renderPlanes: () => {
+        const weeks = Object.values(db.weeks).sort((a,b) => b.week.week_number - a.week.week_number);
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.goHome()" aria-label="Volver al inicio">← Volver</button>
+                <h3>Mis Planes</h3>
+                <div class="flex gap-s">
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()" aria-label="Cambiar tema">${ui.getThemeIcon()}</button>
                 </div>
             </header>
             <div class="container">
                 <div class="flex justify-between align-center mb-m">
-                    <h2 class="mb-m">Mis Planes</h2>
-                    <button class="secondary small" onclick="logic.createManualWeek()">+ Crear Semana Vacía</button>
+                    <span class="text-small text-muted">${weeks.length} ${weeks.length === 1 ? 'plan' : 'planes'}</span>
+                    <button class="secondary small" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía">+ Crear Semana Vacía</button>
                 </div>
                 <div class="flex-col gap-m">
                     ${weeks.length === 0 ? '<div class="card text-center text-muted">No hay planes. Crea uno nuevo o importa JSON.</div>' : ''}
                     ${weeks.map(w => `
-                        <div class="card" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))">
+                        <div class="card" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))" role="button" tabindex="0" aria-label="Abrir semana ${utils.esc(w.week.week_number)}">
                             <div class="flex justify-between">
                                 <h3>Semana ${utils.esc(w.week.week_number)}</h3>
                                 <span class="text-small mono opacity-50">${utils.esc(w.week.source || 'Manual')}</span>
@@ -1591,6 +1725,25 @@ const ui = {
         `;
     },
     renderModal: () => {
+        if (state.modal === 'help') {
+            ui.app.innerHTML = `
+                <div class="modal-overlay" onclick="event.target === this && actions.closeModal()" role="dialog" aria-modal="true" aria-labelledby="help-title">
+                    <div class="modal-content">
+                        <h2 id="help-title">¿Cómo usar Strength Tracker?</h2>
+                        <div class="flex-col gap-m">
+                            <p><strong>📝 Mis Planes</strong> — Crea o importa semanas de entrenamiento. Pulsa + para crear una nueva.</p>
+                            <p><strong>📊 Historial</strong> — Consulta tu progreso y los récords de 1RM estimados.</p>
+                            <p><strong>📈 Análisis</strong> — Volumen por sesión, RPE y carga total.</p>
+                            <p><strong>💾 Backups</strong> — Crea copias de seguridad o restaura versiones anteriores.</p>
+                            <p><strong>📥 Importar</strong> — Carga un JSON de plan de entrenamiento.</p>
+                            <p class="text-small text-muted">Tus datos se guardan localmente en este dispositivo. Recuerda crear backups periódicamente.</p>
+                        </div>
+                        <button class="primary w-full mt-m" onclick="actions.closeModal()" aria-label="Cerrar ayuda">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
         if (state.modal === 'import') {
             ui.app.innerHTML = `
                 <div class="modal-overlay" onclick="event.target === this && actions.closeModal()">
@@ -1860,6 +2013,19 @@ const actions = {
     openExercise: (id) => {
         state.activeExerciseId = id;
         state.view = 'exercise';
+        ui.render();
+    },
+    openPlanes: () => {
+        state.activeWeekId = null;
+        state.view = 'planes';
+        ui.render();
+    },
+    openAnalytics: () => {
+        state.view = 'history';
+        ui.render();
+    },
+    openHelp: () => {
+        state.modal = 'help';
         ui.render();
     },
     openHistory: () => {

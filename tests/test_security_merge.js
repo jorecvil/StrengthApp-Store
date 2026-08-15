@@ -320,6 +320,25 @@ test('backup.list() y backup.get() funcionan correctamente', () => {
     assert(latest.schema_version !== undefined);
 });
 
+// 8. Tests de Métricas del Home (P3.5)
+console.log('\n[8] Tests de Métricas del Home (getGlobalBest1RM, getStreakDays, getLastSessionDate)');
+
+test('getGlobalBest1RM devuelve null cuando no hay ejercicios', () => {
+    mockStorage.clear();
+    const result = analytics.getGlobalBest1RM();
+    assert.strictEqual(result, null);
+});
+
+test('getStreakDays devuelve 0 sin sesiones', () => {
+    mockStorage.clear();
+    assert.strictEqual(analytics.getStreakDays(), 0);
+});
+
+test('getLastSessionDate devuelve null sin sesiones completadas', () => {
+    mockStorage.clear();
+    assert.strictEqual(analytics.getLastSessionDate(), null);
+});
+
 console.log(`\n==============================================`);
 console.log(`Todos los tests superados con éxito (${passed}/${total})`);
 console.log(`==============================================\n`);
