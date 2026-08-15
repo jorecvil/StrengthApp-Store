@@ -4,10 +4,15 @@
   "description": "Strength Tracker - gestion de entrenamientos de gimnasio (web + Android via Capacitor). Offline-first.",
   "main": "www/index.html",
   "scripts": {
-    "sync": "npx cap sync",
+    "test": "node tests/test_security_merge.js",
+    "lint": "eslint tests/",
+    "lint:fix": "eslint www/js/ tests/ --fix",
+    "sync": "npx cap sync android",
     "android:open": "npx cap open android",
-    "bundle": "cd android && ./gradlew bundleRelease",
-    "serve": "python3 -m http.server 4173 --directory www"
+    "serve": "python3 -m http.server 4173 --directory www",
+    "build:check": "node -e \"const fs=require('fs'); const html=fs.readFileSync('www/index.html','utf8'); const script=html.match(/<script>([\\s\\S]*?)<\\/script>/); if(!script){console.error('No script tag found');process.exit(1);} console.log('Bundle OK:',script[1].length,'chars');\"",
+    "prebuild:android": "npm run lint && npm run test && npm run sync",
+    "verify": "npm run build:check && npm run lint && npm run test"
   },
   "keywords": [
     "gym",
@@ -25,6 +30,10 @@
     "@capacitor/cli": "8.0.1",
     "@capacitor/core": "8.0.0",
     "@capacitor/filesystem": "8.0.0",
-    "@capacitor/share": "8.0.0"
+    "@capacitor/share": "8.0.0",
+    "@eslint/js": "^10.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5"
   }
 }

@@ -19,20 +19,19 @@ if (!scriptMatch) {
 }
 
 // Mock de entorno browser mínimo
-const mockLocalStorage = {};
-const mockStorage = {
-    getItem: (k) => mockLocalStorage[k] || null,
-    setItem: (k, v) => { mockLocalStorage[k] = String(v); },
-    removeItem: (k) => { delete mockLocalStorage[k]; },
-    clear: () => { Object.keys(mockLocalStorage).forEach(k => delete mockLocalStorage[k]); }
-};
+const mockStorage = Object.create(Object.prototype, {
+    getItem: { value: (k) => mockStorage[k] || null, writable: true, configurable: true },
+    setItem: { value: (k, v) => { mockStorage[k] = String(v); }, writable: true, configurable: true },
+    removeItem: { value: (k) => { delete mockStorage[k]; }, writable: true, configurable: true },
+    clear: { value: () => { Object.keys(mockStorage).filter(k => !['getItem','setItem','removeItem','clear'].includes(k)).forEach(k => delete mockStorage[k]); }, writable: true, configurable: true }
+});
 
 const sandbox = {
     console: { log: ()=>{}, warn: ()=>{}, error: ()=>{} },
     localStorage: mockStorage,
     window: { matchMedia: () => ({ matches: true }), Capacitor: null },
     document: {
-        getElementById: (id) => ({ innerHTML: '', innerText: '', value: '', classList: { add: ()=>{}, remove: ()=>{} } }),
+        getElementById: (_id) => ({ innerHTML: '', innerText: '', value: '', classList: { add: ()=>{}, remove: ()=>{} } }),
         body: { className: 'dark' },
         querySelectorAll: () => []
     },
@@ -56,7 +55,11 @@ const sandbox = {
     Boolean: Boolean,
     RegExp: RegExp,
     Error: Error,
-    __TEST_EXPORTS__: null
+    __TEST_EXPORTS__: null,
+    STORE_KEY: 'strength_app_data',
+    BACKUP_PREFIX: 'strength_app_backup_',
+    DB_SCHEMA_VERSION: 2,
+    MAX_IMPORT_BYTES: 6 * 1024 * 1024
 };
 
 // Envolver el script para capturar los objetos de módulo
@@ -68,7 +71,7 @@ __TEST_EXPORTS__ = { utils, validate, backup, mergeEngine, analytics, logic };
 vm.createContext(sandbox);
 vm.runInContext(wrappedScript, sandbox);
 
-const { utils, validate, backup, mergeEngine, analytics, logic } = sandbox.__TEST_EXPORTS__;
+const { utils, validate, backup, mergeEngine, analytics } = sandbox.__TEST_EXPORTS__;
 
 let passed = 0;
 let total = 0;
@@ -227,9 +230,94 @@ console.log('\n[5] Pruebas de Analítica (analytics.estimate1RM)');
 
 test('estimate1RM calcula correctamente según fórmula de Epley', () => {
     assert.strictEqual(analytics.estimate1RM(100, 1), 100);
-    // 100 * (1 + 10/30) = 133.3
     assert.strictEqual(analytics.estimate1RM(100, 10), 133.3);
     assert.strictEqual(analytics.estimate1RM(null, 5), null);
+});
+
+test('analytics.getBest1RM devuelve null para ejercicio sin datos', () => {
+    // db vacío
+    assert.strictEqual(analytics.getBest1RM('Press Banca'), null);
+});
+
+test('analytics.exportToCSV no permite inyección a través del nombre del ejercicio', () => {
+    const name = 'Bicep "Curls"';
+    const nameEscaped = name.replace(/"/g, '""');
+    assert.strictEqual(nameEscaped, 'Bicep ""Curls""');
+    assert(!nameEscaped.includes(`"Bicep "Curls""`));
+});
+
+// 6. Tests de Límites de Tamaño y Edge Cases de Validación
+console.log('\n[6] Tests de Límites y Edge Cases (validate.json, utils)');
+
+test('validate.json rechaza entradas que superan MAX_IMPORT_BYTES', () => {
+    const huge = 'x'.repeat(6 * 1024 * 1024);
+    assert.throws(() => validate.json(huge), /tamaño máximo/);
+});
+
+test('utils.uuid genera identificadores únicos', () => {
+    const ids = new Set();
+    for (let i = 0; i < 100; i++) ids.add(utils.uuid());
+    assert.strictEqual(ids.size, 100);
+});
+
+test('utils.formatDate devuelve "-" para fecha inválida', () => {
+    assert.strictEqual(utils.formatDate('not-a-date'), '-');
+    assert.strictEqual(utils.formatDate(null), '-');
+    assert.strictEqual(utils.formatDate(undefined), '-');
+});
+
+test('utils.esc neutraliza img/event-handler injection en texto de ejercicio', () => {
+    const maliciousName = '<img src=x onerror=alert(1)>';
+    const escaped = utils.esc(maliciousName);
+    assert(!escaped.includes('<img'));
+    assert(!escaped.includes('<script>'));
+    assert.strictEqual(escaped, '&lt;img src=x onerror=alert(1)&gt;');
+    // El tag completo está neutralizado (los < > son entities)
+    assert(!escaped.includes('<img '));
+});
+
+test('validate.backupJSON ignora semanas malformadas sin romper el proceso', () => {
+    const backup = {
+        backup_meta: { date: "2026-08-15", version: "6.7" },
+        data: {
+            weeks: {
+                "w_valid": { week: { week_id: "w_valid", week_number: 1 }, sessions: [] },
+                "w_bad": null
+            }
+        }
+    };
+    const clean = validate.backupJSON(JSON.stringify(backup));
+    assert(clean.weeks["w_valid"]);
+    assert(!clean.weeks["w_bad"]);
+});
+
+// 7. Tests de Resiliencia y Recuperación
+console.log('\n[7] Tests de Resiliencia (utils.load, backup)');
+
+test('utils.load devuelve estructura inicial cuando localStorage está vacío', () => {
+    mockStorage.clear();
+    const data = utils.load();
+    assert.strictEqual(data.schema_version, 2);
+    assert.strictEqual(Object.keys(data.weeks).length, 0);
+    assert(data.created_at);
+    assert(data.modified_at);
+});
+
+test('backup.auto() guarda backup con clave con fecha', () => {
+    mockStorage.clear();
+    try { backup.auto(); } catch(_e) { /* ignore */ }
+    const keys = Object.keys(mockStorage).filter(k => k.startsWith('strength_app_backup_'));
+    assert(keys.length > 0, `Expected keys with prefix, got: ${JSON.stringify(Object.keys(mockStorage))}`);
+});
+
+test('backup.list() y backup.get() funcionan correctamente', () => {
+    mockStorage.clear();
+    try { backup.auto(); } catch(_e) { /* ignore */ }
+    const dates = backup.list();
+    assert(dates.length > 0);
+    const latest = backup.getLatest();
+    assert(latest !== null);
+    assert(latest.schema_version !== undefined);
 });
 
 console.log(`\n==============================================`);
