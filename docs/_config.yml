@@ -1,0 +1,8 @@
+title: Strength Tracker
+description: Offline-first strength training tracker
+theme: minima
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
