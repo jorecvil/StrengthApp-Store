@@ -41,6 +41,7 @@ export const ui = {
         if (state.modal) { await ui.renderModal(); return; }
         switch (state.view) {
             case 'home': await ui.renderHome(); break;
+            case 'planes': await ui.renderPlanes(); break;
             case 'week': await ui.renderWeek(); break;
             case 'session': await ui.renderSession(); break;
             case 'exercise': await ui.renderExercise(); break;
@@ -50,38 +51,91 @@ export const ui = {
         }
     },
     renderHome: async () => {
-        const { getDb } = await getUiDeps();
-        const db = getDb();
-        const weeks = Object.values(db.weeks).sort((a,b) => b.week.week_number - a.week.week_number);
-        const { actions } = await import('./actions.js');
         ui.app.innerHTML = `
             <header>
                 <h1>Strength Tracker</h1>
                 <div class="flex gap-s">
-                    <button class="icon-btn ghost" onclick="actions.openHistory()" title="Historial">📊</button>
-                    <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
-                    <button class="icon-btn ghost" onclick="actions.openBackups()" title="Backups">💾</button>
-                    <button class="primary small" onclick="actions.openImport()">Importar</button>
+                    <button class="icon-btn ghost" onclick="actions.openHelp()" title="Ayuda" aria-label="Abrir ayuda" style="color: var(--danger); font-size: 1.35rem; font-weight: 800;">?</button>
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema" style="font-size: 1.35rem;">${ui.getThemeIcon()}</button>
+                </div>
+            </header>
+            <div class="container">
+                <button class="nav-tile active" onclick="actions.openPlanes()" aria-label="Abrir Mis Planes">
+                    <div class="nav-tile-icon" aria-hidden="true">📝</div>
+                    <div class="nav-tile-body">
+                        <div class="nav-tile-title">Mis Planes</div>
+                        <div class="nav-tile-desc">Gestiona tus semanas y entrenamientos</div>
+                    </div>
+                </button>
+
+                <button class="nav-tile" onclick="actions.openHistory()" aria-label="Abrir Historial de Ejercicios">
+                    <div class="nav-tile-icon" aria-hidden="true">📊</div>
+                    <div class="nav-tile-body">
+                        <div class="nav-tile-title">Historial de Ejercicios</div>
+                        <div class="nav-tile-desc">Consulta tu progreso y récords (1RM)</div>
+                    </div>
+                </button>
+
+                <button class="nav-tile" onclick="actions.openAnalytics()" aria-label="Abrir Análisis de Esfuerzo">
+                    <div class="nav-tile-icon" aria-hidden="true">📈</div>
+                    <div class="nav-tile-body">
+                        <div class="nav-tile-title">Análisis de Esfuerzo</div>
+                        <div class="nav-tile-desc">Métricas de volumen, RPE y carga</div>
+                    </div>
+                </button>
+
+                <div class="config-divider" role="separator" aria-label="Configuración">Configuración</div>
+
+                <div class="settings-grid">
+                    <button class="setting-tile" onclick="actions.openBackups()" aria-label="Abrir Backups">
+                        <div class="setting-tile-icon" aria-hidden="true">💾</div>
+                        <div class="setting-tile-title">Backups</div>
+                    </button>
+                    <button class="setting-tile" onclick="actions.openImport()" aria-label="Importar Plan">
+                        <div class="setting-tile-icon" aria-hidden="true">📥</div>
+                        <div class="setting-tile-title">Importar</div>
+                    </button>
+                </div>
+            </div>
+            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Crear semana">＋</button>
+        `;
+    },
+    renderPlanes: async () => {
+        const { getDb } = await getUiDeps();
+        const db = getDb();
+        const weeks = Object.values(db.weeks).sort((a,b) => b.week.week_number - a.week.week_number);
+        ui.app.innerHTML = `
+            <header>
+                <button class="ghost" onclick="actions.goHome()" aria-label="Volver al inicio">← Volver</button>
+                <h3>Mis Planes</h3>
+                <div class="flex gap-s">
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()" aria-label="Cambiar tema">${ui.getThemeIcon()}</button>
                 </div>
             </header>
             <div class="container">
                 <div class="flex justify-between align-center mb-m">
-                    <h2 class="mb-m">Mis Planes</h2>
-                    <button class="secondary small" onclick="logic.createManualWeek()">+ Crear Semana Vacía</button>
+                    <span class="text-small text-muted">${weeks.length} ${weeks.length === 1 ? 'semana registrada' : 'semanas registradas'}</span>
+                    <button class="primary small" onclick="logic.createManualWeek()" aria-label="Crear nueva semana">+ Nueva Semana</button>
                 </div>
                 <div class="flex-col gap-m">
-                    ${weeks.length === 0 ? '<div class="card text-center text-muted">No hay planes. Crea uno nuevo o importa JSON.</div>' : ''}
-                    ${weeks.map(w => `
-                        <div class="card" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))">
-                            <div class="flex justify-between">
+                    ${weeks.length === 0 ? '<div class="card text-center text-muted" style="padding: 36px 16px;">No hay planes todavía.<br><span class="text-small mt-s display-block">Pulsa "+ Nueva Semana" o importa un archivo JSON.</span></div>' : ''}
+                    ${weeks.map(w => {
+                        const allDone = w.sessions.length > 0 && w.sessions.every(s => s.session_completion.status === 'completed');
+                        return `
+                        <div class="card ${allDone ? 'active' : ''}" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))" role="button" tabindex="0" aria-label="Abrir semana ${utils.esc(w.week.week_number)}" style="cursor: pointer;">
+                            <div class="flex justify-between align-center mb-s">
                                 <h3>Semana ${utils.esc(w.week.week_number)}</h3>
-                                <span class="text-small mono opacity-50">${utils.esc(w.week.source || 'Manual')}</span>
+                                <span class="badge ${allDone ? 'completed' : ''}">${utils.esc(w.week.source || 'Manual')}</span>
                             </div>
-                            <p class="text-small mt-m">${utils.esc(w.week.notes || 'Sin notas')}</p>
-                        </div>
-                    `).join('')}
+                            <p class="text-small">${utils.esc(w.week.notes || 'Sin notas')}</p>
+                            <div class="text-small text-muted mt-s">
+                                ${w.sessions.length} ${w.sessions.length === 1 ? 'sesión' : 'sesiones'}
+                            </div>
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>
+            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Crear semana">＋</button>
         `;
     },
     renderWeek: async () => {
@@ -469,6 +523,26 @@ export const ui = {
         const state = getState();
         const { actions } = await import('./actions.js');
         const { backup } = await import('./backup.js');
+
+        if (state.modal === 'help') {
+            ui.app.innerHTML = `
+                <div class="modal-overlay" onclick="event.target === this && actions.closeModal()" role="dialog" aria-modal="true" aria-labelledby="help-title">
+                    <div class="modal-content">
+                        <h2 id="help-title">¿Cómo usar Strength Tracker?</h2>
+                        <div class="flex-col gap-m mt-m">
+                            <p><strong>📝 Mis Planes</strong> — Crea o importa semanas de entrenamiento. Pulsa + para crear una nueva.</p>
+                            <p><strong>📊 Historial</strong> — Consulta tu progreso y los récords de 1RM estimados.</p>
+                            <p><strong>📈 Análisis</strong> — Volumen por sesión, RPE y carga total.</p>
+                            <p><strong>💾 Backups</strong> — Crea copias de seguridad o restaura versiones anteriores.</p>
+                            <p><strong>📥 Importar</strong> — Carga un JSON de plan de entrenamiento.</p>
+                            <p class="text-small text-muted mt-s">Tus datos se guardan localmente en este dispositivo. Recuerda crear backups periódicamente.</p>
+                        </div>
+                        <button class="primary w-full mt-l" onclick="actions.closeModal()" aria-label="Cerrar ayuda">Entendido</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         if (state.modal === 'import') {
             ui.app.innerHTML = `

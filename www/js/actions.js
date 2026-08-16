@@ -61,6 +61,24 @@ export const actions = {
         const { ui } = await import('./ui.js');
         ui.render();
     },
+    openPlanes: async () => {
+        const state = getState();
+        setState({ ...state, activeWeekId: null, view: 'planes' });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
+    openAnalytics: async () => {
+        const state = getState();
+        setState({ ...state, view: 'history' });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
+    openHelp: async () => {
+        const state = getState();
+        setState({ ...state, modal: 'help' });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
     openHistory: async () => {
         const state = getState();
         setState({ ...state, view: 'history' });

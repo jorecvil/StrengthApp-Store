@@ -9,112 +9,7 @@
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExNSIgZmlsbD0iIzFlMjkzYiIvPgogIDxwYXRoIGQ9Ik0yNTYgOTZMMzgyLjE4IDIyMi4xOEgzMjBWMzg0SDE5MlYyMjIuMThIMTI5LjgyTDI1NiA5NloiIGZpbGw9IiNmZmZmZmYiLz4KICA8cmVjdCB4PSIxNDQiIHk9IjMzNiIgd2lkdGg9IjIyNCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNzYiIHk9IjQwMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjMiLz4KPC9zdmc+">
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExNSIgZmlsbD0iIzFlMjkzYiIvPgogIDxwYXRoIGQ9Ik0yNTYgOTZMMzgyLjE4IDIyMi4xOEgzMjBWMzg0SDE5MlYyMjIuMThIMTI5LjgyTDI1NiA5NloiIGZpbGw9IiNmZmZmZmYiLz4KICA8cmVjdCB4PSIxNDQiIHk9IjMzNiIgd2lkdGg9IjIyNCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNzYiIHk9IjQwMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI0OCIgcng9IjEyIiBmaWxsPSIjOTRhM2I4IiBvcGFjaXR5PSIwLjMiLz4KPC9zdmc+">
-    <style>
-        /* --- THEME: MINIMAL SLATE --- */
-        :root {
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-input: #f8fafc;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --primary: #0f172a;
-            --primary-text: #ffffff;
-            --secondary: #cbd5e1;
-            --accent: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --border: #e2e8f0;
-            --radius: 12px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        body.dark {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #f8fafc;
-            --primary-text: #0f172a;
-            --secondary: #475569;
-            --accent: #34d399;
-            --warning: #fbbf24;
-            --border: #334155;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 15px; line-height: 1.5; padding-bottom: 80px; padding-top: env(safe-area-inset-top); transition: background-color 0.3s ease, color 0.3s ease; }
-        h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.025em; }
-        h1 { font-size: 1.5rem; }
-        h2 { font-size: 1.25rem; }
-        h3 { font-size: 1.1rem; }
-        .text-small { font-size: 0.85rem; color: var(--text-muted); }
-        .text-center { text-align: center; }
-        .mono { font-family: 'Courier New', Courier, monospace; letter-spacing: -0.5px; }
-        .flex { display: flex; align-items: center; }
-        .flex-col { display: flex; flex-direction: column; }
-        .justify-between { justify-content: space-between; }
-        .justify-center { justify-content: center; }
-        .gap-s { gap: 8px; }
-        .gap-m { gap: 16px; }
-        .mt-m { margin-top: 16px; }
-        .mb-m { margin-bottom: 16px; }
-        .w-full { width: 100%; }
-        header { position: sticky; top: 0; background: var(--bg-body); padding: 16px; z-index: 100; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: background-color 0.3s; }
-        button { border: none; background: var(--bg-input); color: var(--text-main); padding: 14px 18px; min-height: 48px; border-radius: var(--radius); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        button:active { transform: scale(0.97); }
-        button.primary { background: var(--primary); color: var(--primary-text); }
-        button.secondary { background: var(--bg-input); border: 1px solid var(--border); }
-        button.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        button.ghost { background: transparent; color: var(--text-muted); }
-        button.small { padding: 10px 14px; font-size: 0.9rem; min-height: 40px; }
-        button.icon-btn { width: 48px; height: 48px; min-height: 48px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-        .card { background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 16px; }
-        .card.active { border-left: 4px solid var(--accent); }
-        .card.conflict { border: 2px solid var(--warning); }
-        input, textarea { background: var(--bg-input); border: 1px solid transparent; color: var(--text-main); padding: 14px; min-height: 48px; border-radius: 8px; font-size: 16px; width: 100%; font-family: inherit; transition: border 0.2s; }
-        input:focus, textarea:focus { border-color: var(--text-muted); }
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; background: var(--bg-input); color: var(--text-muted); letter-spacing: 0.05em; }
-        .badge.in_progress { background: var(--text-main); color: var(--bg-card); }
-        .badge.completed { background: var(--accent); color: #fff; }
-        .badge.warning { background: var(--warning); color: #000; }
-        .set-row { display: grid; grid-template-columns: 40px 1fr 1.5fr 50px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .set-row:last-child { border-bottom: none; }
-        .set-row.header { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); font-weight: 600; }
-        .plan-col { display: flex; flex-direction: column; border-right: 1px solid var(--border); padding-right: 12px; text-align: right; }
-        .stat-input { text-align: center; font-weight: 700; background: var(--bg-body); min-height: 44px; padding: 0 4px; font-size: 1.1rem; }
-        .check-btn { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); width: 48px; height: 48px; min-height: 48px; }
-        .check-btn.done { background: var(--accent); color: white; border-color: var(--accent); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .file-input-wrapper { border: 2px dashed var(--border); border-radius: var(--radius); padding: 30px; text-align: center; position: relative; margin-bottom: 20px; transition: background 0.2s; min-height: 80px; }
-        .file-input-wrapper:active { background: var(--bg-input); }
-        .file-input-wrapper input { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer; }
-        #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--bg-card); padding: 12px 24px; border-radius: 50px; font-weight: 600; opacity: 0; pointer-events: none; z-index: 300; transition: opacity 0.3s; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        #toast.show { opacity: 1; }
-        .progress-table { width: 100%; border-collapse: collapse; }
-        .progress-table th { text-align: left; padding: 10px 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .progress-table td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
-        .progress-table tr:last-child td { border-bottom: none; }
-        .rm-badge { background: var(--accent); color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
-        .container { padding: 16px; max-width: 600px; margin: 0 auto; }
-        .divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 20px 0; position: relative; }
-        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
-        .section-header { background: var(--bg-input); padding: 12px 16px; margin: 20px -24px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
-        .display-block { display: block; }
-        .opacity-50 { opacity: 0.5; }
-        .font-bold { font-weight: 700; }
-        .rir-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
-        .rir-btn { min-height: 56px; font-size: 1.2rem; border: 2px solid var(--border); background: var(--bg-input); }
-        .rir-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
-        details { margin-bottom: 16px; }
-        summary { cursor: pointer; padding: 12px; background: var(--bg-input); border-radius: var(--radius); font-weight: 600; user-select: none; }
-        summary:hover { background: var(--secondary); }
-        details[open] summary { margin-bottom: 12px; }
-        .export-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .comparison-box { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 8px 0; font-size: 0.9rem; }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="dark"><div id="app"></div><div id="toast">Notificación</div>
 <script>
@@ -1267,101 +1162,53 @@ const ui = {
         }
     },
     renderHome: () => {
-        const streak = analytics.getStreakDays();
-        const lastSession = analytics.getLastSessionDate();
-        const globalBest = analytics.getGlobalBest1RM();
-        const totalWeeks = Object.keys(db.weeks).length;
-
-        const hour = new Date().getHours();
-        const greeting = hour < 6 ? 'Buenas noches' :
-                         hour < 12 ? 'Buenos días' :
-                         hour < 20 ? 'Buenas tardes' : 'Buenas noches';
-
-        const streakLabel = streak === 0 ? '—' :
-                            streak === 1 ? '1' : String(streak);
-        const streakSub = streak === 0 ? 'Empieza hoy' :
-                          streak === 1 ? '1 día · ¡Sigue así!' : `${streak} días · 🔥 constante`;
-        const lastLabel = lastSession ? utils.formatDate(lastSession.date) : '—';
-        const lastSub = lastSession
-            ? `Semana ${utils.esc(lastSession.weekNumber)}`
-            : 'Programa tu primer entreno';
-        const bestLabel = globalBest ? `${globalBest.value}` : '—';
-        const bestUnit = globalBest ? 'kg' : '';
-        const bestSub = globalBest
-            ? utils.esc(globalBest.exercise || '')
-            : 'Sin datos aún';
-
         ui.app.innerHTML = `
-            <header class="home-header">
-                <h1>Strength<span class="dot">.</span></h1>
-                <div class="home-header-actions">
-                    <button class="icon-btn" onclick="actions.openHelp()" title="Ayuda" aria-label="Abrir ayuda">${ui.getHelpIcon()}</button>
-                    <button class="icon-btn" onclick="utils.toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">${ui.getThemeIcon()}</button>
+            <header>
+                <h1>Strength Tracker</h1>
+                <div class="flex gap-s">
+                    <button class="icon-btn ghost" onclick="actions.openHelp()" title="Ayuda" aria-label="Abrir ayuda" style="color: var(--danger); font-size: 1.35rem; font-weight: 800;">?</button>
+                    <button class="icon-btn ghost" onclick="utils.toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema" style="font-size: 1.35rem;">${ui.getThemeIcon()}</button>
                 </div>
             </header>
             <div class="container">
-                <section class="home-greeting" aria-label="Saludo">
-                    <h2 class="home-greeting-title">${greeting}${totalWeeks > 0 ? `, ${totalWeeks} ${totalWeeks === 1 ? 'plan' : 'planes'}` : ''}.</h2>
-                    <p class="home-greeting-sub">${streak > 0 ? 'Tu racha está encendida. Sigue así.' : 'Bienvenido. Empieza con tu primer plan.'}</p>
-                </section>
-
-                <section class="home-metrics" aria-label="Resumen de actividad">
-                    <div class="home-metric-card" role="group" aria-label="Racha actual">
-                        <div class="metric-label">Racha</div>
-                        <div class="metric-value">${streakLabel}</div>
-                        <div class="metric-sub">${streakSub}</div>
+                <button class="nav-tile active" onclick="actions.openPlanes()" aria-label="Abrir Mis Planes">
+                    <div class="nav-tile-icon" aria-hidden="true">📝</div>
+                    <div class="nav-tile-body">
+                        <div class="nav-tile-title">Mis Planes</div>
+                        <div class="nav-tile-desc">Gestiona tus semanas y entrenamientos</div>
                     </div>
-                    <div class="home-metric-card" role="group" aria-label="Última sesión">
-                        <div class="metric-label">Última</div>
-                        <div class="metric-value">${lastLabel}</div>
-                        <div class="metric-sub">${lastSub}</div>
+                </button>
+
+                <button class="nav-tile" onclick="actions.openHistory()" aria-label="Abrir Historial de Ejercicios">
+                    <div class="nav-tile-icon" aria-hidden="true">📊</div>
+                    <div class="nav-tile-body">
+                        <div class="nav-tile-title">Historial de Ejercicios</div>
+                        <div class="nav-tile-desc">Consulta tu progreso y récords (1RM)</div>
                     </div>
-                </section>
+                </button>
 
-                <h3 class="home-section-title" aria-label="Entrenamiento">Entrenamiento</h3>
-                <section aria-label="Navegación principal">
-                    <button class="nav-card nav-card-hero" onclick="actions.openPlanes()" aria-label="Ir a Mis Planes">
-                        <div class="nav-card-icon" aria-hidden="true">📋</div>
-                        <div class="nav-card-content">
-                            <div class="nav-card-title">Mis Planes</div>
-                            <div class="nav-card-desc">Gestiona tus semanas y entrenamientos</div>
-                        </div>
-                        <div class="nav-card-arrow" aria-hidden="true">→</div>
-                    </button>
-                    <button class="nav-card" onclick="actions.openHistory()" aria-label="Ir a Historial de Ejercicios">
-                        <div class="nav-card-icon" aria-hidden="true">📊</div>
-                        <div class="nav-card-content">
-                            <div class="nav-card-title">Historial de Ejercicios</div>
-                            <div class="nav-card-desc">Consulta tu progreso y récords (1RM: ${bestLabel}${bestUnit ? ' ' + bestUnit : ''})</div>
-                        </div>
-                        <div class="nav-card-arrow" aria-hidden="true">→</div>
-                    </button>
-                    <button class="nav-card" onclick="actions.openAnalytics()" aria-label="Ir a Análisis de Esfuerzo">
-                        <div class="nav-card-icon" aria-hidden="true">📈</div>
-                        <div class="nav-card-content">
-                            <div class="nav-card-title">Análisis de Esfuerzo</div>
-                            <div class="nav-card-desc">${bestSub !== 'Sin datos aún' ? 'Mejor récord: ' + bestSub : 'Métricas de volumen, RPE y carga'}</div>
-                        </div>
-                        <div class="nav-card-arrow" aria-hidden="true">→</div>
-                    </button>
-                </section>
+                <button class="nav-tile" onclick="actions.openAnalytics()" aria-label="Abrir Análisis de Esfuerzo">
+                    <div class="nav-tile-icon" aria-hidden="true">📈</div>
+                    <div class="nav-tile-body">
+                        <div class="nav-tile-title">Análisis de Esfuerzo</div>
+                        <div class="nav-tile-desc">Métricas de volumen, RPE y carga</div>
+                    </div>
+                </button>
 
-                <h3 class="home-section-title" aria-label="Configuración" style="margin-top: 28px;">Configuración</h3>
-                <section class="grid-2" aria-label="Configuración y datos">
-                    <button class="nav-card settings-card" onclick="actions.openBackups()" aria-label="Ir a Backups">
-                        <div class="nav-card-icon" aria-hidden="true">💾</div>
-                        <div class="nav-card-title">Backups</div>
+                <div class="config-divider" role="separator" aria-label="Configuración">Configuración</div>
+
+                <div class="settings-grid">
+                    <button class="setting-tile" onclick="actions.openBackups()" aria-label="Abrir Backups">
+                        <div class="setting-tile-icon" aria-hidden="true">💾</div>
+                        <div class="setting-tile-title">Backups</div>
                     </button>
-                    <button class="nav-card settings-card" onclick="actions.openImport()" aria-label="Importar datos">
-                        <div class="nav-card-icon" aria-hidden="true">📥</div>
-                        <div class="nav-card-title">Importar</div>
+                    <button class="setting-tile" onclick="actions.openImport()" aria-label="Importar Plan">
+                        <div class="setting-tile-icon" aria-hidden="true">📥</div>
+                        <div class="setting-tile-title">Importar</div>
                     </button>
-                </section>
+                </div>
             </div>
-            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Nueva semana">
-                <span class="fab-icon" aria-hidden="true">+</span>
-                <span>Nueva semana</span>
-            </button>
+            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Crear semana">＋</button>
         `;
     },
     renderPlanes: () => {
@@ -1376,22 +1223,28 @@ const ui = {
             </header>
             <div class="container">
                 <div class="flex justify-between align-center mb-m">
-                    <span class="text-small text-muted">${weeks.length} ${weeks.length === 1 ? 'plan' : 'planes'}</span>
-                    <button class="secondary small" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía">+ Crear Semana Vacía</button>
+                    <span class="text-small text-muted">${weeks.length} ${weeks.length === 1 ? 'semana registrada' : 'semanas registradas'}</span>
+                    <button class="primary small" onclick="logic.createManualWeek()" aria-label="Crear nueva semana">+ Nueva Semana</button>
                 </div>
                 <div class="flex-col gap-m">
-                    ${weeks.length === 0 ? '<div class="card text-center text-muted">No hay planes. Crea uno nuevo o importa JSON.</div>' : ''}
-                    ${weeks.map(w => `
-                        <div class="card" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))" role="button" tabindex="0" aria-label="Abrir semana ${utils.esc(w.week.week_number)}">
-                            <div class="flex justify-between">
+                    ${weeks.length === 0 ? '<div class="card text-center text-muted" style="padding: 36px 16px;">No hay planes todavía.<br><span class="text-small mt-s display-block">Pulsa "+ Nueva Semana" o importa un archivo JSON.</span></div>' : ''}
+                    ${weeks.map(w => {
+                        const allDone = w.sessions.length > 0 && w.sessions.every(s => s.session_completion.status === 'completed');
+                        return `
+                        <div class="card ${allDone ? 'active' : ''}" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))" role="button" tabindex="0" aria-label="Abrir semana ${utils.esc(w.week.week_number)}" style="cursor: pointer;">
+                            <div class="flex justify-between align-center mb-s">
                                 <h3>Semana ${utils.esc(w.week.week_number)}</h3>
-                                <span class="text-small mono opacity-50">${utils.esc(w.week.source || 'Manual')}</span>
+                                <span class="badge ${allDone ? 'completed' : ''}">${utils.esc(w.week.source || 'Manual')}</span>
                             </div>
-                            <p class="text-small mt-m">${utils.esc(w.week.notes || 'Sin notas')}</p>
-                        </div>
-                    `).join('')}
+                            <p class="text-small">${utils.esc(w.week.notes || 'Sin notas')}</p>
+                            <div class="text-small text-muted mt-s">
+                                ${w.sessions.length} ${w.sessions.length === 1 ? 'sesión' : 'sesiones'}
+                            </div>
+                        </div>`;
+                    }).join('')}
                 </div>
             </div>
+            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Crear semana">＋</button>
         `;
     },
     renderWeek: () => {
