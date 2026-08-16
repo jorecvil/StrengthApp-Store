@@ -1250,6 +1250,7 @@ const ui = {
         setTimeout(() => t.classList.remove('show'), 3000);
     },
     getThemeIcon: () => document.body.className === 'dark' ? '☀️' : '🌙',
+    getHelpIcon: () => '?',
     render: () => {
         ui.app.innerHTML = '';
         if (state.setModal) { ui.renderSetModal(); return; }
@@ -1269,23 +1270,41 @@ const ui = {
         const streak = analytics.getStreakDays();
         const lastSession = analytics.getLastSessionDate();
         const globalBest = analytics.getGlobalBest1RM();
+        const totalWeeks = Object.keys(db.weeks).length;
 
-        const streakLabel = streak === 0 ? 'Sin entrenar' :
-                            streak === 1 ? '1 día' : `${streak} días`;
-        const streakSub = streak > 0 ? '🔥 ¡Sigue así!' : 'Empieza hoy';
+        const hour = new Date().getHours();
+        const greeting = hour < 6 ? 'Buenas noches' :
+                         hour < 12 ? 'Buenos días' :
+                         hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+
+        const streakLabel = streak === 0 ? '—' :
+                            streak === 1 ? '1' : String(streak);
+        const streakSub = streak === 0 ? 'Empieza hoy' :
+                          streak === 1 ? '1 día · ¡Sigue así!' : `${streak} días · 🔥 constante`;
         const lastLabel = lastSession ? utils.formatDate(lastSession.date) : '—';
-        const bestLabel = globalBest ? `${globalBest.value} kg` : '—';
-        const bestSub = globalBest ? utils.esc(globalBest.exercise || '') : 'Sin datos aún';
+        const lastSub = lastSession
+            ? `Semana ${utils.esc(lastSession.weekNumber)}`
+            : 'Programa tu primer entreno';
+        const bestLabel = globalBest ? `${globalBest.value}` : '—';
+        const bestUnit = globalBest ? 'kg' : '';
+        const bestSub = globalBest
+            ? utils.esc(globalBest.exercise || '')
+            : 'Sin datos aún';
 
         ui.app.innerHTML = `
-            <header>
-                <h1>Strength Tracker</h1>
-                <div class="flex gap-s">
-                    <button class="icon-btn ghost" onclick="actions.openHelp()" title="Ayuda" aria-label="Abrir ayuda">❓</button>
-                    <button class="icon-btn ghost" onclick="utils.toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">${ui.getThemeIcon()}</button>
+            <header class="home-header">
+                <h1>Strength<span class="dot">.</span></h1>
+                <div class="home-header-actions">
+                    <button class="icon-btn" onclick="actions.openHelp()" title="Ayuda" aria-label="Abrir ayuda">${ui.getHelpIcon()}</button>
+                    <button class="icon-btn" onclick="utils.toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">${ui.getThemeIcon()}</button>
                 </div>
             </header>
             <div class="container">
+                <section class="home-greeting" aria-label="Saludo">
+                    <h2 class="home-greeting-title">${greeting}${totalWeeks > 0 ? `, ${totalWeeks} ${totalWeeks === 1 ? 'plan' : 'planes'}` : ''}.</h2>
+                    <p class="home-greeting-sub">${streak > 0 ? 'Tu racha está encendida. Sigue así.' : 'Bienvenido. Empieza con tu primer plan.'}</p>
+                </section>
+
                 <section class="home-metrics" aria-label="Resumen de actividad">
                     <div class="home-metric-card" role="group" aria-label="Racha actual">
                         <div class="metric-label">Racha</div>
@@ -1293,26 +1312,29 @@ const ui = {
                         <div class="metric-sub">${streakSub}</div>
                     </div>
                     <div class="home-metric-card" role="group" aria-label="Última sesión">
-                        <div class="metric-label">Última sesión</div>
+                        <div class="metric-label">Última</div>
                         <div class="metric-value">${lastLabel}</div>
-                        <div class="metric-sub">${streak > 0 ? 'Mantén la constancia' : 'Programa tu primer entreno'}</div>
+                        <div class="metric-sub">${lastSub}</div>
                     </div>
                 </section>
 
+                <h3 class="home-section-title" aria-label="Entrenamiento">Entrenamiento</h3>
                 <section aria-label="Navegación principal">
-                    <button class="nav-card active" onclick="actions.openPlanes()" aria-label="Ir a Mis Planes">
-                        <div class="nav-card-icon" aria-hidden="true">📝</div>
+                    <button class="nav-card nav-card-hero" onclick="actions.openPlanes()" aria-label="Ir a Mis Planes">
+                        <div class="nav-card-icon" aria-hidden="true">📋</div>
                         <div class="nav-card-content">
                             <div class="nav-card-title">Mis Planes</div>
                             <div class="nav-card-desc">Gestiona tus semanas y entrenamientos</div>
                         </div>
+                        <div class="nav-card-arrow" aria-hidden="true">→</div>
                     </button>
                     <button class="nav-card" onclick="actions.openHistory()" aria-label="Ir a Historial de Ejercicios">
                         <div class="nav-card-icon" aria-hidden="true">📊</div>
                         <div class="nav-card-content">
                             <div class="nav-card-title">Historial de Ejercicios</div>
-                            <div class="nav-card-desc">Consulta tu progreso y récords (1RM: ${bestLabel})</div>
+                            <div class="nav-card-desc">Consulta tu progreso y récords (1RM: ${bestLabel}${bestUnit ? ' ' + bestUnit : ''})</div>
                         </div>
+                        <div class="nav-card-arrow" aria-hidden="true">→</div>
                     </button>
                     <button class="nav-card" onclick="actions.openAnalytics()" aria-label="Ir a Análisis de Esfuerzo">
                         <div class="nav-card-icon" aria-hidden="true">📈</div>
@@ -1320,11 +1342,11 @@ const ui = {
                             <div class="nav-card-title">Análisis de Esfuerzo</div>
                             <div class="nav-card-desc">${bestSub !== 'Sin datos aún' ? 'Mejor récord: ' + bestSub : 'Métricas de volumen, RPE y carga'}</div>
                         </div>
+                        <div class="nav-card-arrow" aria-hidden="true">→</div>
                     </button>
                 </section>
 
-                <div class="config-divider" role="separator" aria-label="Configuración">Configuración</div>
-
+                <h3 class="home-section-title" aria-label="Configuración" style="margin-top: 28px;">Configuración</h3>
                 <section class="grid-2" aria-label="Configuración y datos">
                     <button class="nav-card settings-card" onclick="actions.openBackups()" aria-label="Ir a Backups">
                         <div class="nav-card-icon" aria-hidden="true">💾</div>
@@ -1336,7 +1358,10 @@ const ui = {
                     </button>
                 </section>
             </div>
-            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Crear nueva semana">＋</button>
+            <button class="fab" onclick="logic.createManualWeek()" aria-label="Crear nueva semana vacía" title="Nueva semana">
+                <span class="fab-icon" aria-hidden="true">+</span>
+                <span>Nueva semana</span>
+            </button>
         `;
     },
     renderPlanes: () => {
