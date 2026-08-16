@@ -79,6 +79,28 @@ export const actions = {
         const { ui } = await import('./ui.js');
         ui.render();
     },
+    copyLLMPrompt: async () => {
+        const { LLM_PROMPT_TEMPLATE } = await import('./config.js');
+        const { ui } = await import('./ui.js');
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(LLM_PROMPT_TEMPLATE);
+                ui.toast('✓ Prompt copiado al portapapeles');
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = LLM_PROMPT_TEMPLATE;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                ui.toast('✓ Prompt copiado al portapapeles');
+            }
+        } catch (_e) {
+            ui.toast('⚠️ No se pudo acceder al portapapeles');
+        }
+    },
     openHistory: async () => {
         const state = getState();
         setState({ ...state, view: 'history' });

@@ -1,75 +1,94 @@
 # Ficha de Google Play — Strength Tracker
 
-Contenido listo para pegar en Play Console. Ajusta a tu tono si lo deseas.
+Contenido listo para copiar y pegar en Google Play Console.
 
-## Datos generales
+---
+
+## 1. Datos Generales
 
 - **Nombre de la app:** Strength Tracker
-- **Idioma:** Español
-- **Cortas (80 caracteres máx):**
-  `Planifica, entrena y analiza tu fuerza. Offline, gratis y sin anuncios.`
-- **Largas (4000 caracteres máx):**
+- **Idioma principal:** Español (España o Latinoamérica)
+- **Descripción corta (80 caracteres máx):**
+  `Entrenamiento de fuerza y 1RM. 100% offline, sin anuncios e importación con IA.`
+- **Descripción larga (4000 caracteres máx):**
 
+```text
+Strength Tracker es tu cuaderno digital de entrenamiento de fuerza, progresión y 1RM: 100% offline, sin cuentas y sin anuncios.
+
+🤖 CREA TUS RUTINAS CON INTELIGENCIA ARTIFICIAL
+Pídele a ChatGPT, Claude, Gemini o tu asistente favorito que planifique tu semana. Strength Tracker incluye un prompt y formato estándar para que copies el JSON generado y lo pegues en la app en un solo segundo con el botón "Pegar desde portapapeles".
+
+📋 PLANIFICA
+Organiza tus semanas y sesiones con total libertad o añade días ad-hoc según tu fatiga. Cada sesión detalla ejercicios, máquinas recomendadas y el plan de series, repeticiones y cargas.
+
+💪 ENTRENA CON PRECISIÓN
+Durante el entrenamiento registra tus series con facilidad táctil:
+- Botones grandes optimizados para uso con una mano.
+- Carga real levantada y repeticiones.
+- Valoración precisa de esfuerzo percibido mediante RIR (Repeticiones en Reserva) o RPE (0 a 4+).
+- Bloqueo de pantalla automático durante la sesión para que tu móvil no se apague entre descansos.
+
+📈 ANALIZA TU FUERZA
+- Estimación automática de tu 1RM (Fórmula de Epley).
+- Detección de récords personales por ejercicio.
+- Historial gráfico y resúmenes de progresión mensual y últimos 30 días.
+- Exportación de tus marcas y entrenamientos a formato CSV y JSON.
+
+💾 RESPALDO Y PRIVACIDAD TOTAL
+- Respaldo automático diario local.
+- Motor de fusión inteligente con resolución de conflictos si importas datos desde otro dispositivo.
+- Exportación directa para compartir o guardar en tu carpeta de archivos.
+- Tus datos NUNCA salen de tu dispositivo: no hay servidores, no hay rastreadores ni analítica de terceros.
+
+POR QUÉ ELEGIR STRENGTH TRACKER:
+✓ 100% Offline: entrena en sótanos o sin cobertura sin interrupciones.
+✓ Sin registros ni suscripciones: abre la app y entrena.
+✓ Compatible con IA para generar rutinas estructuradas en segundos.
+✓ Diseño Clean Native Athletics: alto contraste en modo claro y modo oscuro para ver claramente en el gimnasio.
+
+Descárgala gratis y lleva el control real de tu progresión de fuerza hoy mismo.
 ```
-Strength Tracker es tu cuaderno de entrenamiento de fuerza, offline y sin anuncios.
 
-PLANIFICA
-Crea tus semanas y sesiones manualmente o importa rutinas en formato JSON. Cada sesión define ejercicios, máquinas y el plan de series, repeticiones y carga.
+---
 
-ENTRENA
-Durante la sesión registras cada serie con su carga real, repeticiones y valoración de esfuerzo (RIR/RPE 0-4). Añade series extra, notas por serie y no te pierdas con el temporizador de descanso y el bloqueo de pantalla activo.
+## 2. Categorización y Contacto
 
-ANALIZA
-La app estima tu 1RM con la fórmula de Epley, detecta tus récords personales y muestra el resumen mensual y los últimos 30 días. Consulta el histórico completo por ejercicio y exporta todo a CSV o JSON.
-
-RESPALDA
-Respaldo automático diario, fusión o reemplazo de datos y exportación nativa para tu carpeta o menú de compartir. Todo se guarda únicamente en tu dispositivo.
-
-POR QUÉ STRENGTH TRACKER
-- 100% offline: tus datos nunca salen de tu móvil.
-- Sin cuentas, sin publicidad, sin suscripciones.
-- Compatible con la importación de rutinas generadas por asistentes de IA mediante JSON.
-- Diseño limpio y oscuro ideal para el gimnasio.
-
-Descárgala gratis y empieza a seguir tu progreso hoy mismo.
-```
-
-## Categoría
 - **Categoría:** Salud y estado físico
-- **Etiqueta:** Fitness / Entrenamiento de fuerza
+- **Etiquetas:** Fitness, Entrenamiento de fuerza, Gimnasio, Cuaderno de entrenamiento
+- **URL de Política de Privacidad:** `https://jorecvil.github.io/StrengthApp-Store/privacy.html`
+- **URL de soporte / Prompt IA:** `https://jorecvil.github.io/StrengthApp-Store/prompt-ia.html`
+- **Email de contacto:** Tu correo de desarrollador
 
-## Gráficos (listos en `play-assets/`)
-| Asset | Archivo |
-|---|---|
-| Icono de la app (512×512) | `icon-512x512.png` |
-| Imagen destacada (1024×500) | `feature-graphic-1024x500.png` |
-| Capturas de pantalla móvil (1080×2340) | `shot-home.png`, `shot-week.png`, `shot-session.png`, `shot-exercise.png`, `shot-history.png`, `shot-exercise_history.png`, `shot-backups.png` |
+---
 
-> **Nota:** las capturas se generaron desde la versión web con datos de demostración. Antes de publicar, se recomienda sustituirlas por capturas reales del dispositivo para mostrar la ficha con la máxima fidelidad. Para ello instala `dist/app-debug.apk`, carga datos reales y captura en tu móvil.
+## 3. Gráficos (Listos en `play-assets/`)
 
-## Declaración de datos (Data safety)
-- **Tipo:** La app **no recopila ni comparte datos**.
-- Se declara como: no se recopila ningún tipo de dato (personal, financiero, ubicación, actividad, identificadores...).
-- **Sin** permisos sensibles. Único permiso declarado: INTERNET (no usado para transmisión de datos del usuario).
-- **Sin** cifrado en tránsito necesario (no hay tránsito).
-- **Sin** petición de borrado de datos (no hay datos fuera del dispositivo).
+| Elemento | Archivo | Dimensiones |
+|---|---|---|
+| **Icono de la app** | `icon-512x512.png` | 512 × 512 px (PNG 32 bits) |
+| **Gráfico de funciones (Feature Graphic)** | `feature-graphic-1024x500.png` | 1024 × 500 px |
+| **Capturas de pantalla móvil** | `shot-home.png`, `shot-week.png`, `shot-session.png`, `shot-exercise.png`, `shot-history.png`, `shot-exercise_history.png`, `shot-backups.png` | 1080 × 2340 px |
 
-## Clasificación de contenido (IARC)
-- No contiene violencia, contenido sexual, drogas ni compras in-app. Clasificación esperada: **3+ (Todos)**.
+---
 
-## Versión / App bundle
-- Archivo a subir: `dist/app-release.aab`
-- versionCode: `1`, versionName: `1.0`
-- targetSdk: 36, minSdk: 24
+## 4. Declaración de Seguridad de Datos (Data Safety)
 
-## Cuenta de desarrollador
-- Necesitas una cuenta de desarrollador de Google Play (pago único de 25 USD) en https://play.google.com/console
-- Acepta el Acuerdo de distribución para desarrolladores y completa el formulario de contacto.
+- **¿La app recopila datos?** → **No**, la app no recopila ni comparte datos de usuario.
+- **Permisos requeridos:** Únicamente `INTERNET` (requerido por el contenedor WebView local; no se transmiten datos a servidores externos).
+- **Publicidad:** No contiene anuncios.
+- **Compras integradas:** No contiene compras in-app.
 
-## Pasos de subida (resumen)
-1. Play Console → **Crear app** → nombre + idioma + gratis.
-2. Configurar la **ficha de la tienda**: corta, larga, capturas, icono, imagen destacada.
-3. **Clasificación de contenido** → completar cuestionario.
-4. **Usuarios objetivo** → declaraciones de publicidad (ninguna) y política de privacidad (enlazar a `PRIVACY.md` publicado en una URL pública).
-5. **Subir la versión** → arrastrar `app-release.aab` (release de producción, firma con la upload key).
-6. Revisar en **Producción** → la consola validará el bundle → **Enviar para revisión**.
+---
+
+## 5. Clasificación de Contenido (IARC)
+
+- Cuestionario IARC: **Todos los públicos (3+) / PEGI 3 / USK 0**.
+
+---
+
+## 6. Versión de Lanzamiento
+
+- **Bundle ID:** `com.strength.app`
+- **versionCode:** `2`
+- **versionName:** `1.1.0`
+- **Target SDK:** 36 (Android 15) · **Min SDK:** 24 (Android 7.0)

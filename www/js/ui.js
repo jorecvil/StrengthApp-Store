@@ -525,19 +525,39 @@ export const ui = {
         const { backup } = await import('./backup.js');
 
         if (state.modal === 'help') {
+            const { LLM_PROMPT_TEMPLATE } = await import('./config.js');
             ui.app.innerHTML = `
                 <div class="modal-overlay" onclick="event.target === this && actions.closeModal()" role="dialog" aria-modal="true" aria-labelledby="help-title">
                     <div class="modal-content">
-                        <h2 id="help-title">¿Cómo usar Strength Tracker?</h2>
-                        <div class="flex-col gap-m mt-m">
-                            <p><strong>📝 Mis Planes</strong> — Crea o importa semanas de entrenamiento. Pulsa + para crear una nueva.</p>
+                        <h2 id="help-title" style="margin-bottom: 12px;">¿Cómo usar Strength Tracker?</h2>
+                        <div class="flex-col gap-m">
+                            <p><strong>📝 Mis Planes</strong> — Gestiona y consulta tus semanas de entrenamiento o crea una nueva.</p>
                             <p><strong>📊 Historial</strong> — Consulta tu progreso y los récords de 1RM estimados.</p>
-                            <p><strong>📈 Análisis</strong> — Volumen por sesión, RPE y carga total.</p>
-                            <p><strong>💾 Backups</strong> — Crea copias de seguridad o restaura versiones anteriores.</p>
-                            <p><strong>📥 Importar</strong> — Carga un JSON de plan de entrenamiento.</p>
-                            <p class="text-small text-muted mt-s">Tus datos se guardan localmente en este dispositivo. Recuerda crear backups periódicamente.</p>
+                            <p><strong>📈 Análisis</strong> — Métricas de volumen, esfuerzo RIR/RPE y carga total.</p>
+                            <p><strong>💾 Backups</strong> — Crea copias de seguridad automáticas o restaura versiones anteriores.</p>
+                            <p><strong>📥 Importar</strong> — Carga rutinas generadas manualmente o por Inteligencia Artificial.</p>
                         </div>
-                        <button class="primary w-full mt-l" onclick="actions.closeModal()" aria-label="Cerrar ayuda">Entendido</button>
+
+                        <div class="card mt-m" style="border: 1.5px solid var(--accent); background: var(--bg-input);">
+                            <div class="flex justify-between align-center mb-s">
+                                <h3 style="font-size: 1.05rem;">🤖 Crear Rutinas con IA</h3>
+                                <span class="badge completed">Prompt LLM</span>
+                            </div>
+                            <p class="text-small text-muted mb-m">
+                                Pídele a ChatGPT, Claude o Gemini que diseñe tu semana en el formato exacto de Strength Tracker.
+                            </p>
+                            <button class="primary w-full" onclick="actions.copyLLMPrompt()">
+                                📋 Copiar Prompt y Plantilla para IA
+                            </button>
+                            
+                            <details class="mt-m">
+                                <summary class="text-small font-bold" style="cursor: pointer; padding: 6px 0;">Ver estructura JSON</summary>
+                                <pre class="text-small mono" style="background: var(--bg-card); padding: 12px; border-radius: 8px; overflow-x: auto; max-height: 200px; border: 1px solid var(--border); margin-top: 8px; font-size: 0.78rem; line-height: 1.4;">${utils.esc(LLM_PROMPT_TEMPLATE)}</pre>
+                            </details>
+                        </div>
+
+                        <p class="text-small text-muted mt-s">Tus datos se guardan 100% localmente en este dispositivo.</p>
+                        <button class="secondary w-full mt-m" onclick="actions.closeModal()" aria-label="Cerrar ayuda">Entendido</button>
                     </div>
                 </div>
             `;
@@ -548,18 +568,26 @@ export const ui = {
             ui.app.innerHTML = `
                 <div class="modal-overlay" onclick="event.target === this && actions.closeModal()">
                     <div class="modal-content">
-                        <h3>Importar JSON</h3>
-                        <p class="text-small mb-m">Elige una opción:</p>
+                        <h3>Importar Plan JSON</h3>
+                        <p class="text-small mb-m">Elige cómo cargar tu rutina semanal:</p>
+                        
+                        <div class="card mb-m" style="background: var(--bg-input); padding: 12px 14px; border: 1px solid var(--border);">
+                            <div class="flex justify-between align-center">
+                                <span class="text-small font-bold">🤖 ¿Usas ChatGPT o Claude?</span>
+                                <button class="ghost small" onclick="actions.openHelp()" style="padding: 4px 8px; color: var(--accent); font-weight: 700;">Ver Prompt →</button>
+                            </div>
+                        </div>
+
                         <button class="primary w-full mb-m" onclick="actions.pasteFromClipboard()">
                             📋 Pegar desde portapapeles
                         </button>
                         <div class="divider">o</div>
                         <div class="file-input-wrapper">
-                            <div class="text-small">📂 Seleccionar archivo</div>
+                            <div class="text-small">📂 Seleccionar archivo .json</div>
                             <input type="file" accept="*/*" id="fileUpload" onchange="actions.handleFileSelect(this)">
                         </div>
                         <div class="divider">o</div>
-                        <textarea id="jsonInput" rows="5" placeholder='Pegar JSON aquí...'></textarea>
+                        <textarea id="jsonInput" rows="4" placeholder='Pegar JSON aquí...'></textarea>
                         <div class="flex gap-s mt-m">
                             <button class="ghost w-full" onclick="actions.closeModal()">Cancelar</button>
                             <button class="primary w-full" onclick="actions.doImport()">Importar</button>

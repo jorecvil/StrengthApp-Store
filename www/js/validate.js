@@ -119,11 +119,22 @@ export const validate = {
                 
                 let baseline = null;
                 if (e.baseline && typeof e.baseline === 'object') {
-                    baseline = {
-                        planned_sets: Math.min(50, Math.max(1, parseInt(e.baseline.planned_sets, 10) || 3)),
-                        planned_reps: Math.min(200, Math.max(1, parseInt(e.baseline.planned_reps, 10) || 10)),
-                        planned_load: Math.min(2000, Math.max(0, parseFloat(e.baseline.planned_load) || 0))
-                    };
+                    if (Array.isArray(e.baseline.set_plan)) {
+                        baseline = {
+                            set_plan: e.baseline.set_plan.slice(0, 50).map((sp, spIdx) => ({
+                                set_index: parseInt(sp.set_index, 10) || (spIdx + 1),
+                                reps: Math.min(200, Math.max(1, parseInt(sp.reps, 10) || 10)),
+                                load: Math.min(2000, Math.max(0, parseFloat(sp.load) || 0)),
+                                unit: validate.string(sp.unit, 10, 'unit', 'kg')
+                            }))
+                        };
+                    } else {
+                        baseline = {
+                            planned_sets: Math.min(50, Math.max(1, parseInt(e.baseline.planned_sets, 10) || 3)),
+                            planned_reps: Math.min(200, Math.max(1, parseInt(e.baseline.planned_reps, 10) || 10)),
+                            planned_load: Math.min(2000, Math.max(0, parseFloat(e.baseline.planned_load) || 0))
+                        };
+                    }
                 }
                 
                 let override = null;

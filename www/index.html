@@ -109,6 +109,58 @@ const BACKUP_PREFIX = 'strength_app_backup_';
 const DB_SCHEMA_VERSION = 2;
 const MAX_IMPORT_BYTES = 5 * 1024 * 1024; // 5 MB
 
+// Plantilla estándar de Prompt para generar rutinas con LLMs (ChatGPT, Claude, Gemini)
+const LLM_PROMPT_TEMPLATE = `Actúa como un entrenador personal y metodólogo de fuerza de élite. Diseña un plan de entrenamiento semanal estructurado y devuélvelo ÚNICAMENTE como un bloque de código JSON válido, sin texto introductorio ni explicaciones fuera del JSON, siguiendo estrictamente esta estructura:
+
+{
+  "schema_version": "1.0",
+  "payload_type": "week",
+  "week_ref": {
+    "week_id": "2026-W34",
+    "week_number": 1,
+    "notes": "Estrategia S+1: [Foco Metodológico]. [SALUD]: Estado."
+  },
+  "sessions": [
+    {
+      "session_id": "A",
+      "title": "Titulo Sesión",
+      "goal_summary": "Objetivo (ej: Fuerza máxima o Estrés metabólico)",
+      "estimated_duration_min": 60,
+      "exercises": [
+        {
+          "exercise_id": "press_pecho-hammer_strength",
+          "name": "Press de Pecho en Máquina",
+          "equipment_csv_name": "press_pecho-hammer_strength",
+          "machine_name": "Hammer Strength Iso-Lateral Chest Press",
+          "pattern": "push_horizontal",
+          "recommendations": "Tips técnicos (incluir Tempo si aplica, ej: 3-0-1)",
+          "baseline": {
+            "set_plan": [
+              { "set_index": 1, "reps": 8, "load": 50, "unit": "kg" },
+              { "set_index": 2, "reps": 12, "load": 45, "unit": "kg" }
+            ]
+          }
+        },
+        {
+          "exercise_id": "core_1",
+          "name": "Plancha Abdominal",
+          "equipment_csv_name": "colchoneta",
+          "pattern": "core",
+          "baseline": { "planned_sets": 3, "planned_reps": 15, "planned_load": 0 }
+        },
+        {
+          "exercise_id": "opt_1",
+          "name": "[OPCIONAL] Elevaciones Laterales",
+          "equipment_csv_name": "mancuernas",
+          "pattern": "isolation",
+          "is_optional": true,
+          "baseline": { "planned_sets": 2, "planned_reps": 15, "planned_load": 0 }
+        }
+      ]
+    }
+  ]
+}`;
+
 // Memoria RIR en sesión
 let lastRIR = null;
 
@@ -457,11 +509,22 @@ const validate = {
                 // Sets plan
                 let baseline = null;
                 if (e.baseline && typeof e.baseline === 'object') {
-                    baseline = {
-                        planned_sets: Math.min(50, Math.max(1, parseInt(e.baseline.planned_sets, 10) || 3)),
-                        planned_reps: Math.min(200, Math.max(1, parseInt(e.baseline.planned_reps, 10) || 10)),
-                        planned_load: Math.min(2000, Math.max(0, parseFloat(e.baseline.planned_load) || 0))
-                    };
+                    if (Array.isArray(e.baseline.set_plan)) {
+                        baseline = {
+                            set_plan: e.baseline.set_plan.slice(0, 50).map((sp, spIdx) => ({
+                                set_index: parseInt(sp.set_index, 10) || (spIdx + 1),
+                                reps: Math.min(200, Math.max(1, parseInt(sp.reps, 10) || 10)),
+                                load: Math.min(2000, Math.max(0, parseFloat(sp.load) || 0)),
+                                unit: validate.string(sp.unit, 10, 'unit', 'kg')
+                            }))
+                        };
+                    } else {
+                        baseline = {
+                            planned_sets: Math.min(50, Math.max(1, parseInt(e.baseline.planned_sets, 10) || 3)),
+                            planned_reps: Math.min(200, Math.max(1, parseInt(e.baseline.planned_reps, 10) || 10)),
+                            planned_load: Math.min(2000, Math.max(0, parseFloat(e.baseline.planned_load) || 0))
+                        };
+                    }
                 }
                 
                 let override = null;
@@ -1607,16 +1670,35 @@ const ui = {
             ui.app.innerHTML = `
                 <div class="modal-overlay" onclick="event.target === this && actions.closeModal()" role="dialog" aria-modal="true" aria-labelledby="help-title">
                     <div class="modal-content">
-                        <h2 id="help-title">¿Cómo usar Strength Tracker?</h2>
+                        <h2 id="help-title" style="margin-bottom: 12px;">¿Cómo usar Strength Tracker?</h2>
                         <div class="flex-col gap-m">
-                            <p><strong>📝 Mis Planes</strong> — Crea o importa semanas de entrenamiento. Pulsa + para crear una nueva.</p>
+                            <p><strong>📝 Mis Planes</strong> — Gestiona y consulta tus semanas de entrenamiento o crea una nueva.</p>
                             <p><strong>📊 Historial</strong> — Consulta tu progreso y los récords de 1RM estimados.</p>
-                            <p><strong>📈 Análisis</strong> — Volumen por sesión, RPE y carga total.</p>
-                            <p><strong>💾 Backups</strong> — Crea copias de seguridad o restaura versiones anteriores.</p>
-                            <p><strong>📥 Importar</strong> — Carga un JSON de plan de entrenamiento.</p>
-                            <p class="text-small text-muted">Tus datos se guardan localmente en este dispositivo. Recuerda crear backups periódicamente.</p>
+                            <p><strong>📈 Análisis</strong> — Métricas de volumen, esfuerzo RIR/RPE y carga total.</p>
+                            <p><strong>💾 Backups</strong> — Crea copias de seguridad automáticas o restaura versiones anteriores.</p>
+                            <p><strong>📥 Importar</strong> — Carga rutinas generadas manualmente o por Inteligencia Artificial.</p>
                         </div>
-                        <button class="primary w-full mt-m" onclick="actions.closeModal()" aria-label="Cerrar ayuda">Cerrar</button>
+
+                        <div class="card mt-m" style="border: 1.5px solid var(--accent); background: var(--bg-input);">
+                            <div class="flex justify-between align-center mb-s">
+                                <h3 style="font-size: 1.05rem;">🤖 Crear Rutinas con IA</h3>
+                                <span class="badge completed">Prompt LLM</span>
+                            </div>
+                            <p class="text-small text-muted mb-m">
+                                Pídele a ChatGPT, Claude o Gemini que diseñe tu semana en el formato exacto de Strength Tracker.
+                            </p>
+                            <button class="primary w-full" onclick="actions.copyLLMPrompt()">
+                                📋 Copiar Prompt y Plantilla para IA
+                            </button>
+                            
+                            <details class="mt-m">
+                                <summary class="text-small font-bold" style="cursor: pointer; padding: 6px 0;">Ver estructura JSON</summary>
+                                <pre class="text-small mono" style="background: var(--bg-card); padding: 12px; border-radius: 8px; overflow-x: auto; max-height: 200px; border: 1px solid var(--border); margin-top: 8px; font-size: 0.78rem; line-height: 1.4;">${utils.esc(LLM_PROMPT_TEMPLATE)}</pre>
+                            </details>
+                        </div>
+
+                        <p class="text-small text-muted mt-s">Tus datos se guardan 100% localmente en este dispositivo.</p>
+                        <button class="secondary w-full mt-m" onclick="actions.closeModal()" aria-label="Cerrar ayuda">Entendido</button>
                     </div>
                 </div>
             `;
@@ -1626,18 +1708,26 @@ const ui = {
             ui.app.innerHTML = `
                 <div class="modal-overlay" onclick="event.target === this && actions.closeModal()">
                     <div class="modal-content">
-                        <h3>Importar JSON</h3>
-                        <p class="text-small mb-m">Elige una opción:</p>
+                        <h3>Importar Plan JSON</h3>
+                        <p class="text-small mb-m">Elige cómo cargar tu rutina semanal:</p>
+                        
+                        <div class="card mb-m" style="background: var(--bg-input); padding: 12px 14px; border: 1px solid var(--border);">
+                            <div class="flex justify-between align-center">
+                                <span class="text-small font-bold">🤖 ¿Usas ChatGPT o Claude?</span>
+                                <button class="ghost small" onclick="actions.openHelp()" style="padding: 4px 8px; color: var(--accent); font-weight: 700;">Ver Prompt →</button>
+                            </div>
+                        </div>
+
                         <button class="primary w-full mb-m" onclick="actions.pasteFromClipboard()">
                             📋 Pegar desde portapapeles
                         </button>
                         <div class="divider">o</div>
                         <div class="file-input-wrapper">
-                            <div class="text-small">📂 Seleccionar archivo</div>
+                            <div class="text-small">📂 Seleccionar archivo .json</div>
                             <input type="file" accept="*/*" id="fileUpload" onchange="actions.handleFileSelect(this)">
                         </div>
                         <div class="divider">o</div>
-                        <textarea id="jsonInput" rows="5" placeholder='Pegar JSON aquí...'></textarea>
+                        <textarea id="jsonInput" rows="4" placeholder='Pegar JSON aquí...'></textarea>
                         <div class="flex gap-s mt-m">
                             <button class="ghost w-full" onclick="actions.closeModal()">Cancelar</button>
                             <button class="primary w-full" onclick="actions.doImport()">Importar</button>
@@ -1905,6 +1995,26 @@ const actions = {
     openHelp: () => {
         state.modal = 'help';
         ui.render();
+    },
+    copyLLMPrompt: async () => {
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(LLM_PROMPT_TEMPLATE);
+                ui.toast('✓ Prompt copiado al portapapeles');
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = LLM_PROMPT_TEMPLATE;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                ui.toast('✓ Prompt copiado al portapapeles');
+            }
+        } catch (_e) {
+            ui.toast('⚠️ No se pudo acceder al portapapeles');
+        }
     },
     openHistory: () => {
         state.view = 'history';

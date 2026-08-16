@@ -1,63 +1,124 @@
-# StrengthApp-Store
+# StrengthApp-Store (Strength Tracker)
 
-Versión de lanzamiento de **Strength Tracker**: gestión de entrenamientos de gimnasio (Web + Android vía Capacitor). Offline-first, sin backend, sin anuncios.
+Aplicación móvil y web de gestión de entrenamientos de fuerza, progresión y cálculo de 1RM. **100% Offline-first, sin backend, sin cuentas y sin publicidad.**
 
-Esta carpeta es el resultado de la fusión: base `StrengthApp` v6.6 (`www2/` → `www/`), lista para Google Play.
+Construida con HTML5/CSS3/JavaScript vanilla y empaquetada para Android con **Capacitor 8**.
 
-## Estructura
+---
+
+## 🤖 Generación de Rutinas con Inteligencia Artificial
+
+Strength Tracker es compatible de forma nativa con rutinas generadas por **ChatGPT, Claude, Gemini, DeepSeek** o cualquier otro LLM.
+
+### 📋 Prompt Estándar para tu Asistente de IA
+
+Copia y pega este prompt en tu IA favorita para que diseñe tu semana de entrenamiento en el formato exacto de la app:
+
+```markdown
+Actúa como un entrenador personal y metodólogo de fuerza de élite. Diseña un plan de entrenamiento semanal estructurado y devuélvelo ÚNICAMENTE como un bloque de código JSON válido, sin texto introductorio ni explicaciones fuera del JSON, siguiendo estrictamente esta estructura:
+
+{
+  "schema_version": "1.0",
+  "payload_type": "week",
+  "week_ref": {
+    "week_id": "2026-W34",
+    "week_number": 1,
+    "notes": "Estrategia S+1: [Foco Metodológico]. [SALUD]: Estado."
+  },
+  "sessions": [
+    {
+      "session_id": "A",
+      "title": "Titulo Sesión",
+      "goal_summary": "Objetivo (ej: Fuerza máxima o Estrés metabólico)",
+      "estimated_duration_min": 60,
+      "exercises": [
+        {
+          "exercise_id": "press_pecho-hammer_strength",
+          "name": "Press de Pecho en Máquina",
+          "equipment_csv_name": "press_pecho-hammer_strength",
+          "machine_name": "Hammer Strength Iso-Lateral Chest Press",
+          "pattern": "push_horizontal",
+          "recommendations": "Tips técnicos (incluir Tempo si aplica, ej: 3-0-1)",
+          "baseline": {
+            "set_plan": [
+              { "set_index": 1, "reps": 8, "load": 50, "unit": "kg" },
+              { "set_index": 2, "reps": 12, "load": 45, "unit": "kg" }
+            ]
+          }
+        },
+        {
+          "exercise_id": "core_1",
+          "name": "Plancha Abdominal",
+          "equipment_csv_name": "colchoneta",
+          "pattern": "core",
+          "baseline": { "planned_sets": 3, "planned_reps": 15, "planned_load": 0 }
+        },
+        {
+          "exercise_id": "opt_1",
+          "name": "[OPCIONAL] Elevaciones Laterales",
+          "equipment_csv_name": "mancuernas",
+          "pattern": "isolation",
+          "is_optional": true,
+          "baseline": { "planned_sets": 2, "planned_reps": 15, "planned_load": 0 }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 📥 Cómo cargarlo en la App
+1. Copia la respuesta JSON generada por la IA.
+2. Abre **Strength Tracker**.
+3. Toca **Importar** (en la pantalla de inicio o en el menú).
+4. Toca el botón **📋 Pegar desde portapapeles** (o pega el texto directamente).
+5. ¡Listo! Tu semana, días, ejercicios, series y cargas quedan cargados al instante.
+
+---
+
+## 📱 Estructura del Proyecto
 
 ```
 StrengthApp-Store/
-├── www/index.html            # App web (v6.6, autocontenida: CSS+JS inline)
-├── android/                  # Proyecto Android (Gradle, generado con `cap add android`)
-├── capacitor.config.json     # appId com.strength.app, webDir www
-├── package.json              # Deps Capacitor 8 (core, android, app, filesystem, share, cli)
-├── keystore/                 # ⚠️ NO COMMIT: clave de firma (generar la tuya)
-├── dist/
-│   ├── app-release.aab       # Bundle firmado para Google Play (v1.0.0)
-│   └── app-debug.apk         # APK debug para QA en dispositivo real
-└── play-assets/              # Assets de la ficha de Play Store + PRIVACY.md + STORE-LISTING.md
+├── www/                       # Aplicación Web (Offline-first)
+│   ├── index.html             # Bundle autocontenido principal
+│   ├── css/styles.css         # Sistema de diseño "Clean Native Athletics"
+│   └── js/                    # Módulos ES estructurados (data, logic, ui, actions, etc.)
+├── android/                   # Proyecto Android nativo (Capacitor 8)
+├── docs/                      # Documentación para GitHub Pages (Privacy Policy, Prompt IA)
+├── .github/workflows/         # CI/CD (Lint, Tests, Build AAB, GitHub Pages)
+├── play-assets/               # Assets de Google Play (Ficha, iconos, gráficos, capturas)
+├── DESIGN.md                  # Especificación del sistema de diseño
+└── package.json               # Configuración y dependencias
 ```
 
-## Requisitos de build
+---
 
-- **JDK 21** (o 17) y **Android SDK** con platform 36 y build-tools (AGP 8.13.0).
-- **Node ≥22** y Capacitor CLI 8.
-- En esta máquina: JDK y SDK instalados en `~/.local/share/jdk-*` y `~/android-sdk` (ver `scripts/setup_env.sh`).
-
-## Comandos
+## 🛠️ Comandos de Desarrollo
 
 ```bash
-# Sincronizar web → android (tras editar www/)
-npx cap sync android
+# Instalar dependencias
+npm install
 
-# Web local (prueba en navegador)
-python3 -m http.server 4173 --directory www
+# Ejecutar suite de pruebas (24 tests automatizados)
+npm test
 
-# Build release AAB (Linux/x86 o en host Windows via gradlew.bat)
-cd android && ./gradlew bundleRelease
+# Ejecutar linter
+npm run lint
 
-# Build debug APK
-cd android && ./gradlew assembleDebug
+# Sincronizar cambios web con el proyecto Android
+npm run sync
+
+# Servir localmente para pruebas web
+npm run serve
 ```
 
-> **Nota host ARM64 (WSL2):** aapt2 de AGP no tiene build para linux-aarch64. En este entorno el build se ejecuta en el host Windows con el JBR de Android Studio (ver `scripts/build_windows.ps1`). En un host x86-64 Linux el build es directo.
+---
 
-## Firma
+## 🚀 Publicación y Google Play
 
-- `android/keystore.properties` (NO versionar) apunta a `../../keystore/strengthapp-release.jks`.
-- Regenera tu propia clave: `keytool -genkeypair -v -keystore keystore/strengthapp-release.jks -alias strengthapp -keyalg RSA -keysize 2048 -validity 10000`
-- **Guarda la keystore y sus contraseñas en lugar seguro** (perderla = no poder actualizar la app en Play).
-
-## Google Play
-
-Todo el material de la ficha está en `play-assets/`:
-- `PRIVACY.md` — política de privacidad (la app no recopila datos).
-- `STORE-LISTING.md` — textos de la ficha + checklist de subida.
-- Capturas (1080×2340) generadas desde la web con datos demo; se recomienda sustituirlas por capturas reales antes de publicar.
-
-## Datos de la app
-
-- Modelo: `weeks → sessions → exercises → sets` con RIR/RPE y 1RM (Epley).
-- Persistencia: localStorage + backups diarios (7 días). Importación/exportación JSON.
-- Sin backend: 100% offline. Sin cuentas ni publicidad.
+- **Bundle ID:** `com.strength.app`
+- **Versión:** `v1.1.0` (`versionCode 2`)
+- **Política de Privacidad:** Publicada en `https://jorecvil.github.io/StrengthApp-Store/privacy.html`
+- **Ficha de Google Play:** Textos y capturas en `play-assets/STORE-LISTING.md`
+- **Build AAB:** Automatizado con GitHub Actions en `.github/workflows/release.yml`

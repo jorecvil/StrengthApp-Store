@@ -65,13 +65,13 @@ const sandbox = {
 // Envolver el script para capturar los objetos de módulo
 const wrappedScript = `
 ${scriptMatch[1]}
-__TEST_EXPORTS__ = { utils, validate, backup, mergeEngine, analytics, logic };
+__TEST_EXPORTS__ = { utils, validate, backup, mergeEngine, analytics, logic, LLM_PROMPT_TEMPLATE };
 `;
 
 vm.createContext(sandbox);
 vm.runInContext(wrappedScript, sandbox);
 
-const { utils, validate, backup, mergeEngine, analytics } = sandbox.__TEST_EXPORTS__;
+const { utils, validate, backup, mergeEngine, analytics, LLM_PROMPT_TEMPLATE } = sandbox.__TEST_EXPORTS__;
 
 let passed = 0;
 let total = 0;
@@ -337,6 +337,36 @@ test('getStreakDays devuelve 0 sin sesiones', () => {
 test('getLastSessionDate devuelve null sin sesiones completadas', () => {
     mockStorage.clear();
     assert.strictEqual(analytics.getLastSessionDate(), null);
+});
+
+// 9. Tests de Compatibilidad con Plantilla JSON de IA (LLMs)
+console.log('\n[9] Tests de Compatibilidad con Plantilla JSON de IA (LLMs)');
+
+test('LLM_PROMPT_TEMPLATE contiene un JSON válido y pasa validate.json()', () => {
+    assert(typeof LLM_PROMPT_TEMPLATE === 'string');
+    // Extraer bloque JSON del prompt
+    const jsonMatch = LLM_PROMPT_TEMPLATE.match(/\{[\s\S]*\}/);
+    assert(jsonMatch !== null, 'Debe contener un bloque JSON');
+    
+    // Validar e importar usando el validador oficial de la app
+    const cleanWeek = validate.json(jsonMatch[0]);
+    assert.strictEqual(cleanWeek.week.week_number, 1);
+    assert.strictEqual(cleanWeek.sessions.length, 1);
+    assert.strictEqual(cleanWeek.sessions[0].session_id, 'A');
+    assert.strictEqual(cleanWeek.sessions[0].exercises.length, 3);
+    
+    // Verificar ejercicio con set_plan
+    const ex1 = cleanWeek.sessions[0].exercises[0];
+    assert.strictEqual(ex1.exercise_id, 'press_pecho-hammer_strength');
+    assert.strictEqual(ex1.name, 'Press de Pecho en Máquina');
+    assert.strictEqual(ex1.baseline.set_plan.length, 2);
+    assert.strictEqual(ex1.baseline.set_plan[0].reps, 8);
+    assert.strictEqual(ex1.baseline.set_plan[0].load, 50);
+
+    // Verificar ejercicio con planned_sets
+    const ex2 = cleanWeek.sessions[0].exercises[1];
+    assert.strictEqual(ex2.baseline.planned_sets, 3);
+    assert.strictEqual(ex2.baseline.planned_reps, 15);
 });
 
 console.log(`\n==============================================`);
