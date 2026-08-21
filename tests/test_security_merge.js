@@ -160,6 +160,14 @@ test('validate.json sanitiza y estructura correctamente una semana válida', () 
     assert.strictEqual(clean.sessions[0].session_completion.status, 'pending');
 });
 
+test('validate.string elimina marcadores span de IA y conserva saltos de línea', () => {
+    const note = 'CALENTAMIENTO INNEGOCIABLE[span_16](start_span)[span_16](end_span)\nInicia por el brazo izquierdo.';
+    assert.strictEqual(
+        validate.string(note),
+        'CALENTAMIENTO INNEGOCIABLE\nInicia por el brazo izquierdo.'
+    );
+});
+
 test('validate.backupJSON procesa backups con múltiples formatos', () => {
     const backupObj = {
         backup_meta: { date: "2026-08-15", version: "6.7" },

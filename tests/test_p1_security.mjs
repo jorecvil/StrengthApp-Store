@@ -80,6 +80,14 @@ await test('rechaza week_ref como array y limita el tamaño de importación', ()
     assert.throws(() => validate.json('x'.repeat(5 * 1024 * 1024 + 1)), /tamaño máximo/);
 });
 
+await test('limpia marcadores span de IA y conserva los saltos de línea de notas', () => {
+    const note = 'CALENTAMIENTO INNEGOCIABLE[span_16](start_span)[span_16](end_span)\nInicia por el brazo izquierdo.';
+    assert.equal(
+        validate.string(note),
+        'CALENTAMIENTO INNEGOCIABLE\nInicia por el brazo izquierdo.'
+    );
+});
+
 await test('normaliza target_1rm válido y descarta valores fuera de rango', () => {
     const valid = validate.json(JSON.stringify({
         week_ref: { week_id: 'week_1', week_number: 1 },
@@ -162,4 +170,4 @@ await test('renderiza aunque el registro nativo del botón Atrás falle', async 
     window.Capacitor = null;
 });
 
-console.log(`P1 tests superados: ${passed}/11`);
+console.log(`P1 tests superados: ${passed}/12`);

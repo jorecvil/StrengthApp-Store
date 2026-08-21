@@ -29,7 +29,9 @@ export const validate = {
     },
     string: (value, maxLength = 500, name = 'Campo', defaultVal = '') => {
         if (value === null || value === undefined) return defaultVal;
-        const str = String(value).trim();
+        const str = String(value)
+            .replace(/\[span_\d+\]\((?:start_span|end_span)\)/g, '')
+            .trim();
         if (str.length > maxLength) return str.substring(0, maxLength);
         return str;
     },

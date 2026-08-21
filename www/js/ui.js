@@ -171,7 +171,7 @@ export const ui = {
                             <h3>${utils.esc(s.session_id)} • ${utils.esc(s.title || 'Entreno')}</h3>
                             <span class="badge ${st}">${utils.esc(st.replace('_', ' '))}</span>
                         </div>
-                        <p class="text-small mb-m">${utils.esc(s.goal_summary || '')}</p>
+                        <p class="text-small note-text mb-m">${utils.esc(s.goal_summary || '')}</p>
                         <button class="primary w-full" data-action="openSession" data-session-id="${utils.esc(s.session_id)}">
                             ${st === 'completed' ? 'Ver Resultados' : 'Abrir Sesión'}
                         </button>
@@ -243,7 +243,7 @@ export const ui = {
                 ` : (s.session_notes ? `
                     <div class="card">
                         <label class="text-small text-muted mb-m display-block">Notas de la sesión</label>
-                        <p class="text-small">${utils.esc(s.session_notes)}</p>
+                        <p class="text-small note-text">${utils.esc(s.session_notes)}</p>
                     </div>
                 ` : '')}
                 <div class="mt-m pt-m" style="border-top:1px solid var(--border)">
@@ -290,7 +290,7 @@ export const ui = {
                         📊 Historial
                     </button>
                 </div>
-                ${ex.recommendations ? `<p class="text-small card mb-m" style="background: var(--bg-input); padding: 12px;">${utils.esc(ex.recommendations)}</p>` : ''}
+                ${ex.recommendations ? `<p class="text-small note-text card mb-m" style="background: var(--bg-input); padding: 12px;">${utils.esc(ex.recommendations)}</p>` : ''}
                 ${!locked ? `
                 <details class="mb-m">
                     <summary class="text-small text-muted" style="cursor:pointer; padding: 10px 0;">⚙️ Ajustar Plan</summary>
