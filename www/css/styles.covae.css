@@ -1,0 +1,233 @@
+/*
+ * STRENGTH TRACKER · COVAE LABS
+ * Adaptación visual compatible con styles.css existente.
+ * Carga este archivo después de styles.css.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap');
+
+:root {
+    --covae-green: #173d35;
+    --covae-green-dark: #112e29;
+    --covae-green-soft: #dceae5;
+    --covae-stone: #e8e3d8;
+    --covae-copper: #b7793e;
+    --covae-graphite: #191c1b;
+    --covae-off-white: #f8f8f5;
+
+    --bg-body: #f2efe8;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8f8f5;
+    --bg-input: #f1f3ef;
+    --bg-hover: rgba(23, 61, 53, .06);
+
+    --text-main: #191c1b;
+    --text-muted: #65706c;
+    --text-sub: #8c9892;
+
+    --primary: #173d35;
+    --primary-text: #ffffff;
+    --primary-hover: #112e29;
+
+    --secondary: #f8f8f5;
+    --secondary-text: #191c1b;
+    --secondary-border: #d9ded9;
+
+    --accent: #b7793e;
+    --accent-hover: #9d6431;
+    --accent-light: rgba(183, 121, 62, .13);
+    --accent-text: #ffffff;
+
+    --danger: #b94d48;
+    --danger-bg: #fdf0ee;
+    --danger-border: #e7beba;
+
+    --warning: #bd7a2e;
+    --warning-bg: #fff7e9;
+
+    --border: #dfe2dc;
+    --border-light: #eef0eb;
+
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+
+    --shadow-sm: 0 1px 2px rgba(25, 28, 27, .06);
+    --shadow: 0 2px 8px rgba(25, 28, 27, .07), 0 1px 3px rgba(25, 28, 27, .04);
+    --shadow-md: 0 6px 18px rgba(25, 28, 27, .11);
+    --shadow-lg: 0 14px 30px rgba(25, 28, 27, .14);
+
+    --font-stack: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body.dark {
+    --bg-body: #0d2521;
+    --bg-card: #112e29;
+    --bg-card-hover: #173d35;
+    --bg-input: #173d35;
+    --bg-hover: rgba(248, 248, 245, .06);
+
+    --text-main: #f8f8f5;
+    --text-muted: #aab9b3;
+    --text-sub: #789088;
+
+    --primary: #24594e;
+    --primary-text: #ffffff;
+    --primary-hover: #2c685a;
+
+    --secondary: #173d35;
+    --secondary-text: #f8f8f5;
+    --secondary-border: #31534b;
+
+    --accent: #d7a56d;
+    --accent-hover: #e1b27e;
+    --accent-light: rgba(215, 165, 109, .16);
+
+    --danger: #e48780;
+    --danger-bg: rgba(185, 77, 72, .16);
+    --danger-border: rgba(228, 135, 128, .3);
+
+    --warning: #e0aa65;
+    --warning-bg: rgba(189, 122, 46, .16);
+
+    --border: #31534b;
+    --border-light: #24463f;
+
+    --shadow: 0 3px 10px rgba(0, 0, 0, .28);
+    --shadow-md: 0 6px 18px rgba(0, 0, 0, .36);
+    --shadow-lg: 0 14px 30px rgba(0, 0, 0, .45);
+}
+
+header {
+    border-bottom-color: var(--border-light);
+}
+
+header h1,
+header h2,
+header h3,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Sora', var(--font-stack);
+}
+
+button:focus-visible,
+.nav-tile:focus-visible,
+.setting-tile:focus-visible {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(183, 121, 62, .18);
+}
+
+button.primary {
+    background: var(--covae-green);
+    box-shadow: 0 3px 8px rgba(23, 61, 53, .24);
+}
+
+button.primary:hover {
+    background: var(--covae-green-dark);
+}
+
+button.secondary:hover,
+button.icon-btn:hover {
+    border-color: var(--covae-copper);
+}
+
+button.ghost:hover {
+    color: var(--covae-green);
+}
+
+button.danger:hover {
+    background: rgba(185, 77, 72, .18);
+}
+
+button.check-btn:hover {
+    border-color: var(--covae-copper);
+    color: var(--covae-copper);
+}
+
+button.check-btn.done {
+    background: var(--covae-green);
+    border-color: var(--covae-green);
+    box-shadow: 0 4px 12px rgba(23, 61, 53, .32);
+}
+
+button.rir-btn.selected {
+    background: var(--covae-copper);
+    border-color: var(--covae-copper);
+    box-shadow: 0 4px 10px rgba(183, 121, 62, .3);
+}
+
+button.fab {
+    background: linear-gradient(135deg, #b7793e 0%, #9d6431 100%);
+    box-shadow: 0 6px 20px rgba(183, 121, 62, .38);
+}
+
+button.fab:hover {
+    box-shadow: 0 8px 24px rgba(183, 121, 62, .46);
+}
+
+.card,
+.nav-tile,
+.setting-tile {
+    border-color: var(--border);
+}
+
+.card:hover,
+.nav-tile:hover,
+.setting-tile:hover {
+    border-color: rgba(183, 121, 62, .65);
+}
+
+.card.active,
+.nav-tile.active {
+    border-left-color: var(--covae-copper);
+}
+
+.card.conflict {
+    border-color: var(--warning);
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--covae-copper);
+    box-shadow: 0 0 0 3px rgba(183, 121, 62, .14);
+}
+
+.file-input-wrapper:focus-within {
+    border-color: var(--covae-copper);
+    background: var(--accent-light);
+}
+
+.badge,
+.rm-badge {
+    border-radius: var(--radius-full);
+    font-weight: 700;
+}
+
+.badge.completed,
+.badge.in_progress {
+    background: var(--covae-green-soft);
+    color: var(--covae-green);
+}
+
+.badge.warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.stat-input {
+    color: var(--covae-green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
