@@ -5,7 +5,13 @@
  * ============================================================================
  */
 
-import { STORE_KEY, DB_SCHEMA_VERSION, BACKUP_PREFIX } from './config.js';
+import {
+    STORE_KEY,
+    DB_SCHEMA_VERSION,
+    BACKUP_PREFIX,
+    LOCALSTORAGE_QUOTA_WARN,
+    LOCALSTORAGE_QUOTA_MAX
+} from './config.js';
 
 export const utils = {
     esc: (str) => {
@@ -17,6 +23,46 @@ export const utils = {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;')
             .replace(/`/g, '&#96;');
+    },
+    /**
+     * Estima el consumo de localStorage y limpia backups antiguos si se acerca al límite.
+     * Devuelve { ok, used, freed } para que el llamador pueda actuar.
+     */
+    quotaCheck: (cleanupBackups = true) => {
+        try {
+            let total = 0;
+            const keys = Object.keys(localStorage);
+            const backupKeys = keys.filter(k => k.startsWith(BACKUP_PREFIX)).sort();
+            for (const k of keys) {
+                const v = localStorage.getItem(k);
+                if (v !== null) total += v.length * 2; // approx bytes (UTF-16)
+            }
+
+            if (total < LOCALSTORAGE_QUOTA_WARN) {
+                return { ok: true, used: total, freed: 0 };
+            }
+
+            let freed = 0;
+            if (cleanupBackups && backupKeys.length > 2) {
+                const toRemove = backupKeys.slice(0, backupKeys.length - 2);
+                for (const k of toRemove) {
+                    const v = localStorage.getItem(k);
+                    if (v !== null) freed += v.length * 2;
+                    localStorage.removeItem(k);
+                }
+            }
+
+            const after = total - freed;
+            return {
+                ok: after < LOCALSTORAGE_QUOTA_MAX,
+                used: after,
+                freed: freed,
+                total: total
+            };
+        } catch (e) {
+            console.warn('quotaCheck error:', e);
+            return { ok: false, used: 0, freed: 0, error: e.message };
+        }
     },
     encodeParam: (str) => {
         return encodeURIComponent(String(str === null || str === undefined ? '' : str))
@@ -64,6 +110,13 @@ export const utils = {
         try {
             data.schema_version = DB_SCHEMA_VERSION;
             data.modified_at = utils.isoNow();
+
+            // Control de cuota antes de escribir (evita fallos silenciosos en quota agotada)
+            const quota = utils.quotaCheck(true);
+            if (!quota.ok) {
+                console.warn('Cuota de localStorage casi agotada; se limpiaron backups antiguos.');
+            }
+
             localStorage.setItem(STORE_KEY, JSON.stringify(data));
             if (backupAuto) backupAuto();
             return true;
@@ -73,13 +126,13 @@ export const utils = {
                 const keys = Object.keys(localStorage).filter(k => k.startsWith(BACKUP_PREFIX)).sort();
                 if (keys.length > 2) {
                     keys.slice(0, keys.length - 2).forEach(k => localStorage.removeItem(k));
-                    localStorage.setItem(STORE_KEY, JSON.stringify(data));
-                    return true;
                 }
+                localStorage.setItem(STORE_KEY, JSON.stringify(data));
+                return true;
             } catch (retryErr) {
                 console.error('Reintento de guardado fallido:', retryErr);
+                return false;
             }
-            return false;
         }
     },
     load: () => {

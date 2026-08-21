@@ -5,7 +5,7 @@
  * ============================================================================
  */
 
-import { wakeLock } from './config.js';
+import { MAX_IMPORT_BYTES, wakeLock } from './config.js';
 import { utils } from './utils.js';
 import { validate } from './validate.js';
 import { backup } from './backup.js';
@@ -249,6 +249,11 @@ export const actions = {
     handleFileSelect: async (input) => {
         const file = input.files[0];
         if(!file) return;
+        if (file.size > MAX_IMPORT_BYTES) {
+            const { ui } = await import('./ui.js');
+            ui.toast(`⚠️ El archivo excede el tamaño máximo (${(file.size / 1024 / 1024).toFixed(1)} MB)`);
+            return;
+        }
         const reader = new FileReader();
         return new Promise((resolve, reject) => {
             reader.onload = async (e) => {
@@ -268,6 +273,11 @@ export const actions = {
     handleBackupFileSelect: async (input) => {
         const file = input.files[0];
         if(!file) return;
+        if (file.size > MAX_IMPORT_BYTES * 2) {
+            const { ui } = await import('./ui.js');
+            ui.toast(`⚠️ El archivo de backup excede el tamaño máximo (${(file.size / 1024 / 1024).toFixed(1)} MB)`);
+            return;
+        }
         const reader = new FileReader();
         return new Promise((resolve, reject) => {
             reader.onload = async (e) => {
@@ -304,21 +314,23 @@ export const actions = {
             ui.toast(`⚠️ ${e.message}`);
         }
     },
-    restoreFromBackupJSON: async (mode) => {
+restoreFromBackupJSON: async (mode) => {
         const val = document.getElementById('backupJsonInput').value;
         if(!val || !val.trim()) {
             const { ui } = await import('./ui.js');
             ui.toast("⚠️ Contenido vacío");
             return;
         }
-        
+
         const { ui } = await import('./ui.js');
         const { setDb } = await import('./data.js');
-        
+
         try {
             const data = validate.backupJSON(val);
             if (mode === 'replace') {
                 if (!confirm(`⚠️ ALERTA DE BORRADO\n\nVas a reemplazar TODA la base de datos con este backup. Se perderán los datos actuales no guardados.\n\n¿Continuar?`)) return;
+                // Backup pre-destrutivo antes de sobrescribir
+                backup.auto();
                 utils.save(data);
                 const newDb = utils.load();
                 setDb(newDb);

@@ -12,6 +12,18 @@ export const BACKUP_PREFIX = 'strength_app_backup_';
 export const DB_SCHEMA_VERSION = 2;
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024; // 5 MB
 
+// Validación de identificadores (IDs de semana/sesión/ejercicio)
+// Solo permite alfanuméricos, guiones y guiones bajos para evitar inyección en atributos.
+export const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+export const MAX_ID_LENGTH = 64;
+
+// Copias de seguridad: número máximo de backups conservados (con timestamp completo)
+export const BACKUP_KEEP_COUNT = 10;
+
+// Umbrales de cuota de localStorage (aprox. 5 MB típico)
+export const LOCALSTORAGE_QUOTA_WARN = 4 * 1024 * 1024; // 4 MB advertencia
+export const LOCALSTORAGE_QUOTA_MAX = 5 * 1024 * 1024;  // 5 MB límite duro
+
 // Plantilla estándar de Prompt para generar rutinas con LLMs (ChatGPT, Claude, Gemini)
 export const LLM_PROMPT_TEMPLATE = `Actúa como un entrenador personal y metodólogo de fuerza de élite. Diseña un plan de entrenamiento semanal estructurado y devuélvelo ÚNICAMENTE como un bloque de código JSON válido, sin texto introductorio ni explicaciones fuera del JSON, siguiendo estrictamente esta estructura:
 

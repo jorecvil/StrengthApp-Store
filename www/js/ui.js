@@ -122,7 +122,7 @@ export const ui = {
                     ${weeks.map(w => {
                         const allDone = w.sessions.length > 0 && w.sessions.every(s => s.session_completion.status === 'completed');
                         return `
-                        <div class="card ${allDone ? 'active' : ''}" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))" role="button" tabindex="0" aria-label="Abrir semana ${utils.esc(w.week.week_number)}" style="cursor: pointer;">
+                        <div class="card ${allDone ? 'active' : ''}" data-action="openWeek" data-week-id="${utils.esc(w.week.week_id)}" role="button" tabindex="0" aria-label="Abrir semana ${utils.esc(w.week.week_number)}" style="cursor: pointer;">
                             <div class="flex justify-between align-center mb-s">
                                 <h3>Semana ${utils.esc(w.week.week_number)}</h3>
                                 <span class="badge ${allDone ? 'completed' : ''}">${utils.esc(w.week.source || 'Manual')}</span>
@@ -154,13 +154,13 @@ export const ui = {
                 <h3>S ${utils.esc(w.week.week_number)}</h3>
                 <div class="flex gap-s">
                     <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
-                    <button class="secondary small" onclick="actions.exportWeek()">JSON</button>
+                    <button class="secondary small" data-action="exportWeek">JSON</button>
                 </div>
             </header>
             <div class="container">
                 <div class="flex justify-between mb-m">
                     <span class="text-small text-muted">ID: ${utils.esc(String(w.week.week_id).slice(0,8))}...</span>
-                    <button class="danger small" onclick="logic.deleteWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))">Borrar</button>
+                    <button class="danger small" data-action="deleteWeek" data-week-id="${utils.esc(w.week.week_id)}">Borrar</button>
                 </div>
                 ${w.sessions.length === 0 ? '<div class="card text-center text-muted">Semana vacía</div>' : ''}
                 ${w.sessions.map(s => {
@@ -172,12 +172,12 @@ export const ui = {
                             <span class="badge ${st}">${utils.esc(st.replace('_', ' '))}</span>
                         </div>
                         <p class="text-small mb-m">${utils.esc(s.goal_summary || '')}</p>
-                        <button class="primary w-full" onclick="actions.openSession(decodeURIComponent('${utils.encodeParam(s.session_id)}'))">
+                        <button class="primary w-full" data-action="openSession" data-session-id="${utils.esc(s.session_id)}">
                             ${st === 'completed' ? 'Ver Resultados' : 'Abrir Sesión'}
                         </button>
                     </div>`;
                 }).join('')}
-                <button class="secondary w-full mt-m" onclick="logic.addSessionToWeek(decodeURIComponent('${utils.encodeParam(w.week.week_id)}'))">
+                <button class="secondary w-full mt-m" data-action="addSessionToWeek" data-week-id="${utils.esc(w.week.week_id)}">
                     + Añadir Día (Ad-hoc)
                 </button>
             </div>
@@ -198,7 +198,7 @@ export const ui = {
         const { actions } = await import('./actions.js');
         ui.app.innerHTML = `
             <header>
-                <button class="ghost" onclick="actions.openWeek(decodeURIComponent('${utils.encodeParam(wId)}'))">← Semana</button>
+                <button class="ghost" data-action="openWeek" data-week-id="${utils.esc(wId)}">← Semana</button>
                 <h3>Sesión ${utils.esc(sId)}</h3>
                 <button class="icon-btn ghost" onclick="utils.toggleTheme()">${ui.getThemeIcon()}</button>
             </header>
@@ -223,22 +223,22 @@ export const ui = {
                         </div>
                         <div class="flex justify-between align-center">
                             <span class="text-small font-bold">${setsDone} / ${totalSets} Sets</span>
-                            <button class="primary small" onclick="actions.openExercise(decodeURIComponent('${utils.encodeParam(ex.exercise_id)}'))">
+                            <button class="primary small" data-action="openExercise" data-exercise-id="${utils.esc(ex.exercise_id)}">
                                 ${done ? 'Revisar' : 'Entrenar'}
                             </button>
                         </div>
                     </div>`;
                 }).join('')}
                 ${!locked ? `
-                    <button class="secondary w-full mb-m" onclick="logic.addNewExerciseToSession(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'))">
+                    <button class="secondary w-full mb-m" data-action="addNewExerciseToSession" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}">
                         + Añadir Ejercicio Extra
                     </button>
                 ` : ''}
                 ${!locked ? `
                     <div class="card">
                         <label class="text-small text-muted mb-m display-block">Notas de la sesión</label>
-                        <textarea rows="3" placeholder="Cómo te sentiste..." 
-                            onchange="logic.updateSessionNote(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'), this.value)">${utils.esc(s.session_notes || '')}</textarea>
+                        <textarea rows="3" placeholder="Cómo te sentiste..."
+                            data-change-action="updateSessionNote" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}">${utils.esc(s.session_notes || '')}</textarea>
                     </div>
                 ` : (s.session_notes ? `
                     <div class="card">
@@ -278,15 +278,15 @@ export const ui = {
         
         ui.app.innerHTML = `
             <header>
-                <button class="ghost" onclick="actions.openSession(decodeURIComponent('${utils.encodeParam(sId)}'))">← Volver</button>
-                <button class="${ex.completion.status === 'completed' ? 'secondary' : 'ghost'}" onclick="logic.toggleComplete(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'),decodeURIComponent('${utils.encodeParam(exId)}'))">
+                <button class="ghost" data-action="openSession" data-session-id="${utils.esc(sId)}">← Volver</button>
+                <button class="${ex.completion.status === 'completed' ? 'secondary' : 'ghost'}" data-action="toggleComplete" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}" data-exercise-id="${utils.esc(exId)}">
                     ${ex.completion.status === 'completed' ? '✔ Hecho' : 'Marcar Fin'}
                 </button>
             </header>
             <div class="container">
                 <div class="flex justify-between align-center mb-m">
                     <h2>${utils.esc(ex.name)}</h2>
-                    <button class="secondary small" onclick="actions.openExerciseHistory(decodeURIComponent('${utils.encodeParam(ex.name)}'))">
+                    <button class="secondary small" data-action="openExerciseHistory" data-ex-name="${utils.esc(ex.name)}">
                         📊 Historial
                     </button>
                 </div>
@@ -332,35 +332,35 @@ export const ui = {
                             <div class="flex gap-s">
                                 <input type="number" inputmode="numeric" id="reps_${i}" class="stat-input" placeholder="Reps"
                                     value="${utils.esc(showReps)}" ${locked ? 'disabled' : ''}
-                                    onchange="logic.updateSet(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'),decodeURIComponent('${utils.encodeParam(exId)}'), ${i}, {reps: this.value});">
+                                    data-change-action="updateSetReps" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}" data-exercise-id="${utils.esc(exId)}" data-set-idx="${i}">
                                 <input type="number" inputmode="decimal" step="0.5" id="load_${i}" class="stat-input" placeholder="Kg"
                                     value="${utils.esc(showLoad)}" ${locked ? 'disabled' : ''}
-                                    onchange="logic.updateSet(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'),decodeURIComponent('${utils.encodeParam(exId)}'), ${i}, {load: this.value});">
+                                    data-change-action="updateSetLoad" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}" data-exercise-id="${utils.esc(exId)}" data-set-idx="${i}">
                             </div>
                             <div class="flex justify-center">
                                 <button class="icon-btn check-btn ${isDone ? 'done' : ''}" 
-                                    onclick="actions.openSetModal(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'),decodeURIComponent('${utils.encodeParam(exId)}'), ${i})">
+                                    data-action="openSetModal" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}" data-exercise-id="${utils.esc(exId)}" data-set-idx="${i}">
                                     ${isDone ? '✔' : '○'}
                                 </button>
                             </div>
                         </div>`;
                     }).join('')}
-                    ${!locked ? `<button class="ghost w-full mt-m" onclick="logic.addSet(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'),decodeURIComponent('${utils.encodeParam(exId)}'))">+ Set Extra</button>` : ''}
+                    ${!locked ? `<button class="ghost w-full mt-m" data-action="addSet" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}" data-exercise-id="${utils.esc(exId)}">+ Set Extra</button>` : ''}
                 </div>
                 
                 <div class="card">
                     <label class="text-small text-muted mb-m display-block">Notas del Ejercicio</label>
                     <textarea rows="3" placeholder="Sensaciones, ajustes..." ${locked ? 'disabled' : ''}
-                        onchange="logic.updateExerciseNote(decodeURIComponent('${utils.encodeParam(wId)}'),decodeURIComponent('${utils.encodeParam(sId)}'),decodeURIComponent('${utils.encodeParam(exId)}'), this.value)">${utils.esc(ex.notes || '')}</textarea>
+                        data-change-action="updateExerciseNote" data-week-id="${utils.esc(wId)}" data-session-id="${utils.esc(sId)}" data-exercise-id="${utils.esc(exId)}">${utils.esc(ex.notes || '')}</textarea>
                 </div>
                 
                 ${!locked && nextEx ? `
-                    <button class="primary w-full mt-m" onclick="actions.openExercise(decodeURIComponent('${utils.encodeParam(nextEx.exercise_id)}'))">
+                    <button class="primary w-full mt-m" data-action="openExercise" data-exercise-id="${utils.esc(nextEx.exercise_id)}">
                         Siguiente: ${utils.esc(nextEx.name)} →
                     </button>
                 ` : ''}
                 ${!locked && !nextEx ? `
-                    <button class="secondary w-full mt-m" onclick="actions.openSession(decodeURIComponent('${utils.encodeParam(sId)}'))">
+                    <button class="secondary w-full mt-m" data-action="openSession" data-session-id="${utils.esc(sId)}">
                         ← Volver a Sesión
                     </button>
                 ` : ''}
@@ -391,7 +391,7 @@ export const ui = {
                     const history = analytics.getExerciseHistory(exName);
                     const lastSession = history[0];
                     return `
-                        <div class="card" onclick="actions.openExerciseHistory(decodeURIComponent('${utils.encodeParam(exName)}'))">
+                        <div class="card" data-action="openExerciseHistory" data-ex-name="${utils.esc(exName)}">
                             <div class="flex justify-between align-center mb-m">
                                 <h3>${utils.esc(exName)}</h3>
                                 ${best1RM ? `<span class="rm-badge">${utils.esc(best1RM)} kg</span>` : ''}
@@ -507,10 +507,10 @@ export const ui = {
                 <div class="card">
                     <h3 class="mb-m">Exportar Histórico Completo</h3>
                     <div class="export-row">
-                        <button class="secondary" onclick="actions.exportExerciseCSV(decodeURIComponent('${utils.encodeParam(exName)}'))">
+                        <button class="secondary" data-action="exportExerciseCSV" data-ex-name="${utils.esc(exName)}">
                             📊 CSV
                         </button>
-                        <button class="secondary" onclick="actions.exportExerciseJSON(decodeURIComponent('${utils.encodeParam(exName)}'))">
+                        <button class="secondary" data-action="exportExerciseJSON" data-ex-name="${utils.esc(exName)}">
                             📄 JSON
                         </button>
                     </div>
@@ -617,10 +617,10 @@ export const ui = {
                                             <span class="font-bold">${utils.formatDate(date)}</span>
                                         </div>
                                         <div class="flex gap-s">
-                                            <button class="secondary w-full" onclick="backup.restore(decodeURIComponent('${utils.encodeParam(date)}'), actions, ui.toast)">
+                                            <button class="secondary w-full" data-action="restoreBackup" data-timestamp="${utils.esc(date)}">
                                                 Restaurar
                                             </button>
-                                            <button class="primary w-full" onclick="backup.download(decodeURIComponent('${utils.encodeParam(date)}'), ui.toast)">
+                                            <button class="primary w-full" data-action="downloadBackup" data-timestamp="${utils.esc(date)}">
                                                 📥 Bajar
                                             </button>
                                         </div>
@@ -824,5 +824,76 @@ export const ui = {
                 </div>
             </div>
         `;
+    },
+    /**
+     * Sistema de delegated listeners para evitar XSS por atributos inline (onclick).
+     * Los datos del usuario se pasan como data-attributes (escapados) y se leen
+     * en el handler, eliminando la necesidad de interpolar JS en atributos HTML.
+     */
+    bindDelegated: () => {
+        if (ui._delegatedBound) return;
+        ui._delegatedBound = true;
+
+        ui.app.addEventListener('click', async (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            const action = target.getAttribute('data-action');
+            const get = (name) => {
+                const attribute = `data-${name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+                const v = target.getAttribute(attribute);
+                return v === null ? null : v;
+            };
+
+            const { actions } = await import('./actions.js');
+            const { backup } = await import('./backup.js');
+
+            switch (action) {
+                case 'openWeek': actions.openWeek(get('weekId')); break;
+                case 'openSession': actions.openSession(get('sessionId')); break;
+                case 'openExercise': actions.openExercise(get('exerciseId')); break;
+                case 'openExerciseHistory': actions.openExerciseHistory(get('exName')); break;
+                case 'deleteWeek': logic.deleteWeek(get('weekId')); break;
+                case 'addSessionToWeek': logic.addSessionToWeek(get('weekId')); break;
+                case 'addNewExerciseToSession': logic.addNewExerciseToSession(get('weekId'), get('sessionId')); break;
+                case 'toggleComplete': logic.toggleComplete(get('weekId'), get('sessionId'), get('exerciseId')); break;
+                case 'addSet': logic.addSet(get('weekId'), get('sessionId'), get('exerciseId')); break;
+                case 'openSetModal': actions.openSetModal(get('weekId'), get('sessionId'), get('exerciseId'), parseInt(get('setIdx'), 10)); break;
+                case 'exportWeek': actions.exportWeek(); break;
+                case 'exportExerciseCSV': actions.exportExerciseCSV(get('exName')); break;
+                case 'exportExerciseJSON': actions.exportExerciseJSON(get('exName')); break;
+                case 'resolveConflictChoice': actions.resolveConflictChoice(get('choice')); break;
+                case 'resolveAllConflicts': actions.resolveAllConflicts(get('choice')); break;
+                case 'restoreBackup': backup.restore(get('timestamp'), actions, ui.toast); break;
+                case 'downloadBackup': backup.download(get('timestamp'), ui.toast); break;
+                default: break;
+            }
+        });
+
+        ui.app.addEventListener('change', async (e) => {
+            const target = e.target.closest('[data-change-action]');
+            if (!target) return;
+            const action = target.getAttribute('data-change-action');
+            const get = (name) => {
+                const attribute = `data-${name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+                return target.getAttribute(attribute);
+            };
+
+            switch (action) {
+                case 'updateSessionNote':
+                    logic.updateSessionNote(get('weekId'), get('sessionId'), target.value);
+                    break;
+                case 'updateExerciseNote':
+                    logic.updateExerciseNote(get('weekId'), get('sessionId'), get('exerciseId'), target.value);
+                    break;
+                case 'updateSetReps':
+                    logic.updateSet(get('weekId'), get('sessionId'), get('exerciseId'), parseInt(get('setIdx'), 10), { reps: target.value });
+                    break;
+                case 'updateSetLoad':
+                    logic.updateSet(get('weekId'), get('sessionId'), get('exerciseId'), parseInt(get('setIdx'), 10), { load: target.value });
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 };

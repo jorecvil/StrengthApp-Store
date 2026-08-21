@@ -10,22 +10,52 @@ import { getState, setState, setDb } from './data.js';
 import { ui } from './ui.js';
 import { backup } from './backup.js';
 
+// Margen de tiempo (ms) para considerar dos modified_at como "iguales"
+const TIMESTAMP_TOLERANCE_MS = 5000;
+
 export const mergeEngine = {
+    /**
+     * Devuelve true si hay un conflicto real entre local e incoming.
+     * Si ambos tienen modified_at válidos y la diferencia supera el margen,
+     * la versión más reciente gana (no hay conflicto).
+     */
     detectSessionConflict: (localS, incomingS) => {
         if (!localS || !incomingS) return false;
         const localSetsDone = (localS.exercises || []).reduce((acc, e) => acc + (e.execution?.sets?.filter(s => s.reps > 0).length || 0), 0);
         const incomingSetsDone = (incomingS.exercises || []).reduce((acc, e) => acc + (e.execution?.sets?.filter(s => s.reps > 0).length || 0), 0);
-        
+
         if (localSetsDone === 0 && incomingSetsDone > 0) return false;
         if (incomingSetsDone === 0 && localSetsDone > 0) return false;
         if (localSetsDone === 0 && incomingSetsDone === 0) return false;
+
+        // Comparar timestamps si ambos los tienen: latest wins evita conflicto falso
+        const localTs = localS.modified_at ? new Date(localS.modified_at).getTime() : NaN;
+        const incomingTs = incomingS.modified_at ? new Date(incomingS.modified_at).getTime() : NaN;
+        if (!isNaN(localTs) && !isNaN(incomingTs)) {
+            const diff = Math.abs(localTs - incomingTs);
+            if (diff > TIMESTAMP_TOLERANCE_MS) return false; // latest wins, no conflict
+        }
 
         const localJSON = JSON.stringify(localS.exercises || []);
         const incomingJSON = JSON.stringify(incomingS.exercises || []);
         return localJSON !== incomingJSON;
     },
-
+    /**
+     * Devuelve la versión "ganadora" de una sessions según modified_at (latest wins).
+     * Si no se puede decidir, devuelve null (usa la lógica actual).
+     */
+    pickLatest: (localS, incomingS) => {
+        const localTs = localS?.modified_at ? new Date(localS.modified_at).getTime() : NaN;
+        const incomingTs = incomingS?.modified_at ? new Date(incomingS.modified_at).getTime() : NaN;
+        if (!isNaN(localTs) && !isNaN(incomingTs)) {
+            return incomingTs >= localTs ? incomingS : localS;
+        }
+        return null;
+    },
     startDataMerge: async (importedData, actions, toastFn) => {
+        // Backup pre-destrutivo antes de cualquier fusión
+        backup.auto();
+
         const currentData = utils.load();
         const conflicts = [];
         const mergedWeeks = { ...currentData.weeks };
@@ -59,8 +89,20 @@ export const mergeEngine = {
                         } else {
                             const incomingSets = (incomingSession.exercises || []).reduce((acc, e) => acc + (e.execution?.sets?.filter(s => s.reps > 0).length || 0), 0);
                             const localSets = (existing.session.exercises || []).reduce((acc, e) => acc + (e.execution?.sets?.filter(s => s.reps > 0).length || 0), 0);
-                            if (incomingSets >= localSets) {
+
+                            // Nunca reemplazar una sesión registrada por una vacía.
+                            if (localSets === 0 && incomingSets > 0) {
                                 mergedSessions[existing.index] = incomingSession;
+                            } else if (incomingSets === 0 && localSets > 0) {
+                                mergedSessions[existing.index] = existing.session;
+                            } else {
+                                // Latest wins por timestamp; si no se puede, usar lógica de series.
+                                const latest = mergeEngine.pickLatest(existing.session, incomingSession);
+                                if (latest) {
+                                    mergedSessions[existing.index] = latest;
+                                } else if (incomingSets >= localSets) {
+                                    mergedSessions[existing.index] = incomingSession;
+                                }
                             }
                         }
                     }

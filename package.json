@@ -4,13 +4,13 @@
   "description": "Strength Tracker - gestion de entrenamientos de gimnasio (web + Android via Capacitor). Offline-first.",
   "main": "www/index.html",
   "scripts": {
-    "test": "node tests/test_security_merge.js",
+    "test": "node tests/test_p1_security.mjs",
     "lint": "eslint tests/",
     "lint:fix": "eslint www/js/ tests/ --fix",
     "sync": "npx cap sync android",
     "android:open": "npx cap open android",
     "serve": "python3 -m http.server 4173 --directory www",
-    "build:check": "node -e \"const fs=require('fs'); const html=fs.readFileSync('www/index.html','utf8'); const script=html.match(/<script>([\\s\\S]*?)<\\/script>/); if(!script){console.error('No script tag found');process.exit(1);} console.log('Bundle OK:',script[1].length,'chars');\"",
+    "build:check": "node -e \"const fs=require('fs'); const html=fs.readFileSync('www/index.html','utf8'); const script=html.match(/<script type=\\\"module\\\" src=\\\"([^\\\"]+)\\\"><\\/script>/); if(!script || !fs.existsSync('www/'+script[1])){console.error('Module entry point not found');process.exit(1);} console.log('Module OK:',script[1]);\"",
     "prebuild:android": "npm run lint && npm run test && npm run sync",
     "verify": "npm run build:check && npm run lint && npm run test"
   },
