@@ -19,7 +19,12 @@ import { analytics } from './analytics.js';
 Object.assign(window, { actions, analytics, backup, logic, ui, utils });
 
 export const init = async () => {
-    await initAppListeners();
+    try {
+        await initAppListeners();
+    } catch (error) {
+        // El back handler nativo no puede impedir que la interfaz se inicie.
+        console.error('No se pudo inicializar la integración nativa:', error);
+    }
     utils.initTheme();
     ui.bindDelegated();
     await ui.render();

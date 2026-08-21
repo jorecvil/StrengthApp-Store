@@ -142,12 +142,24 @@ await test('libera backups antiguos cuando el almacenamiento supera el umbral', 
     assert.equal(Object.keys(storage).filter((key) => key.startsWith('strength_app_backup_')).length, 2);
 });
 
-await test('carga el punto de entrada modular y expone los handlers estáticos', async () => {
+await test('tolera un plugin Capacitor App ausente', async () => {
+    const { initAppListeners } = await import(moduleUrl('capacitor-adapter.js'));
+    window.Capacitor = {};
+    await assert.doesNotReject(initAppListeners());
+});
+
+await test('renderiza aunque el registro nativo del botón Atrás falle', async () => {
+    window.Capacitor = {
+        Plugins: {
+            App: { addListener: async () => { throw new Error('plugin unavailable'); } }
+        }
+    };
     await import(moduleUrl('app.js'));
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(typeof window.actions.openImport, 'function');
     assert.equal(typeof window.logic.createManualWeek, 'function');
     assert.equal(appElement.innerHTML.includes('Strength Tracker'), true);
+    window.Capacitor = null;
 });
 
-console.log(`P1 tests superados: ${passed}/10`);
+console.log(`P1 tests superados: ${passed}/11`);

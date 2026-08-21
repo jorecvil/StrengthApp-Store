@@ -8,25 +8,25 @@
 import { wakeLock } from './config.js';
 
 export const initAppListeners = async () => {
-    if (window.Capacitor) {
-        const { App } = Capacitor.Plugins;
-        const { getState, setState } = await import('./data.js');
-        const { actions } = await import('./actions.js');
+    const appPlugin = window.Capacitor?.Plugins?.App;
+    if (!appPlugin?.addListener) return;
 
-        await App.addListener('backButton', ({ canGoBack }) => {
-            const state = getState();
-            if (state.modal || state.setModal) {
-                actions.closeModal();
-                actions.closeSetModal();
-                return;
-            }
-            switch (state.view) {
-                case 'exercise': actions.openSession(state.activeSessionId); break;
-                case 'session': actions.openWeek(state.activeWeekId); break;
-                case 'week': case 'history': actions.goHome(); break;
-                case 'home': App.exitApp(); break;
-                default: actions.goHome();
-            }
-        });
-    }
+    const { getState } = await import('./data.js');
+    const { actions } = await import('./actions.js');
+
+    await appPlugin.addListener('backButton', () => {
+        const state = getState();
+        if (state.modal || state.setModal) {
+            actions.closeModal();
+            actions.closeSetModal();
+            return;
+        }
+        switch (state.view) {
+            case 'exercise': actions.openSession(state.activeSessionId); break;
+            case 'session': actions.openWeek(state.activeWeekId); break;
+            case 'week': case 'history': actions.goHome(); break;
+            case 'home': appPlugin.exitApp?.(); break;
+            default: actions.goHome();
+        }
+    });
 };
