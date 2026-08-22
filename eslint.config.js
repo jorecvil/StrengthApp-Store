@@ -3,7 +3,7 @@ const js = require('@eslint/js');
 module.exports = [
   js.configs.recommended,
   {
-    files: ['tests/**/*.{js,mjs}'],
+    files: ['www/js/**/*.js', 'tests/**/*.{js,mjs}', 'scripts/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -30,7 +30,25 @@ module.exports = [
         String: 'readonly',
         Boolean: 'readonly',
         Error: 'readonly',
-        URL: 'readonly'
+        URL: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        Blob: 'readonly',
+        FileReader: 'readonly',
+        URLSearchParams: 'readonly',
+        prompt: 'readonly',
+        confirm: 'readonly',
+        alert: 'readonly',
+        structuredClone: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        requestAnimationFrame: 'readonly',
+        Capacitor: 'readonly',
+        require: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly'
       }
     },
     rules: {
@@ -38,7 +56,7 @@ module.exports = [
       'eqeqeq': 'error',
       'no-console': 'off',
       'no-alert': 'off',
-      'no-undef': 'off',
+      'no-undef': 'error',
       'no-redeclare': 'off'
     }
   }

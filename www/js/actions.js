@@ -69,7 +69,91 @@ export const actions = {
     },
     openAnalytics: async () => {
         const state = getState();
-        setState({ ...state, view: 'history' });
+        setState({ ...state, view: 'analytics' });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
+    selectAnalyticsPeriod: async (period) => {
+        const state = getState();
+        setState({ ...state, analyticsPeriod: period });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
+    selectAnalyticsVariant: async (exerciseKey) => {
+        const state = getState();
+        setState({ ...state, analyticsExerciseKey: exerciseKey || null });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
+    updateScheduledDate: async (date) => {
+        const state = getState();
+        try {
+            await logic.updateScheduledDate(state.activeWeekId, state.activeSessionId, date);
+            const { ui } = await import('./ui.js');
+            ui.toast('✓ Fecha programada actualizada');
+        } catch (error) {
+            const { ui } = await import('./ui.js');
+            ui.toast(`⚠️ ${error.message}`);
+        }
+    },
+    createSeason: async () => {
+        const state = getState();
+        setState({ ...state, modal: 'season_form', seasonForm: null });
+        const { ui } = await import('./ui.js');
+        ui.render();
+    },
+    submitSeasonForm: async () => {
+        const name = document.getElementById('season_name')?.value;
+        const start_date = document.getElementById('season_start')?.value;
+        const objective = document.getElementById('season_objective')?.value;
+        const notes = document.getElementById('season_notes')?.value;
+        const priority_exercise_keys = [...document.querySelectorAll('[name="season_priority"]:checked')].map(input => input.value);
+        try {
+            const prepared = await logic.prepareSeasonCreate({ name, start_date, objective, notes, priority_exercise_keys });
+            if (prepared.requiresConfirmation) {
+                const state = getState();
+                setState({ ...state, seasonPrepared: prepared, modal: 'season_confirm' });
+                const { ui } = await import('./ui.js');
+                ui.render();
+                return;
+            }
+            await logic.applySeasonCreate(prepared);
+            const state = getState();
+            setState({ ...state, analyticsPeriod: 'active_season', modal: null, seasonPrepared: null });
+            const { ui } = await import('./ui.js');
+            ui.toast('✓ Temporada creada y activada');
+            ui.render();
+        } catch (error) {
+            const { ui } = await import('./ui.js');
+            ui.toast(`⚠️ ${error.message}`);
+        }
+    },
+    confirmSeasonCreate: async () => {
+        const state = getState();
+        if (!state.seasonPrepared) return;
+        await logic.applySeasonCreate(state.seasonPrepared);
+        setState({ ...state, analyticsPeriod: 'active_season', modal: null, seasonPrepared: null });
+        const { ui } = await import('./ui.js');
+        ui.toast('✓ Temporada creada y activada');
+        ui.render();
+    },
+    closeActiveSeason: async () => {
+        const { getDb } = await import('./data.js');
+        const { seasons } = await import('./seasons.js');
+        const active = seasons.active(getDb());
+        if (!active || !confirm(`¿Cerrar ${active.name}?`)) return;
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        await logic.closeSeason(active.season_id, today);
+        const state = getState();
+        setState({ ...state, analyticsPeriod: `season:${active.season_id}`, analyticsSeasonId: active.season_id });
+        const { ui } = await import('./ui.js');
+        ui.toast('✓ Temporada cerrada');
+        ui.render();
+    },
+    manageSeasons: async () => {
+        const state = getState();
+        setState({ ...state, modal: 'season_manage' });
         const { ui } = await import('./ui.js');
         ui.render();
     },
@@ -107,11 +191,11 @@ export const actions = {
         const { ui } = await import('./ui.js');
         ui.render();
     },
-    openExerciseHistory: async (exerciseName) => {
+    openExerciseHistory: async (exerciseKey) => {
         const state = getState();
         setState({
             ...state,
-            historyExercise: exerciseName,
+            historyExercise: exerciseKey,
             view: 'exercise_history'
         });
         const { ui } = await import('./ui.js');
@@ -141,25 +225,31 @@ export const actions = {
         const currentReps = repsInput ? repsInput.value : undefined;
         const currentLoad = loadInput ? loadInput.value : undefined;
 
+        const exercise = await logic.getExercise(wId, sId, exId);
+        const set = exercise?.execution?.sets?.[setIndex];
+        const selectedRIR = set?.rir === null || set?.rir === undefined ? null : set.rir;
+        const selectedRIRIsOpenEnded = Boolean(set?.rir_is_open_ended);
         const state = getState();
         setState({
             ...state,
-            setModal: { wId, sId, exId, setIndex, currentReps, currentLoad }
+            setModal: { wId, sId, exId, setIndex, currentReps, currentLoad },
+            selectedRIR,
+            selectedRIRIsOpenEnded
         });
         const { ui } = await import('./ui.js');
         ui.render();
     },
     closeSetModal: async () => {
         const state = getState();
-        setState({ ...state, setModal: null });
+        setState({ ...state, setModal: null, selectedRIR: null, selectedRIRIsOpenEnded: false });
         const { ui } = await import('./ui.js');
         ui.render();
     },
-    selectRIR: async (value) => {
+    selectRIR: async (value, isOpenEnded = false, source = null) => {
         document.querySelectorAll('.rir-btn').forEach(btn => btn.classList.remove('selected'));
-        if (event && event.target) event.target.classList.add('selected');
+        if (source) source.classList.add('selected');
         const state = getState();
-        setState({ ...state, selectedRIR: value });
+        setState({ ...state, selectedRIR: value, selectedRIRIsOpenEnded: isOpenEnded });
         lastRIR = value; 
     },
     saveSetWithoutRIR: async () => {
@@ -179,9 +269,10 @@ export const actions = {
             reps: parseFloat(reps),
             load: parseFloat(load),
             rir: null,
+            rir_is_open_ended: false,
             notes: notes
         });
-        setState({ ...state, setModal: null });
+        setState({ ...state, setModal: null, selectedRIR: null, selectedRIRIsOpenEnded: false });
         const { ui } = await import('./ui.js');
         ui.toast('✓ Set guardado');
         ui.render();
@@ -192,12 +283,16 @@ export const actions = {
         const reps = document.getElementById('modal_reps').value;
         const load = document.getElementById('modal_load').value;
         const notes = document.getElementById('modal_notes').value;
-        const selectedBtn = document.querySelector('.rir-btn.selected');
-        const rir = selectedBtn ? parseInt(selectedBtn.textContent, 10) : null;
+        const rir = state.selectedRIR;
         
         if (!reps || !load) {
             const { ui } = await import('./ui.js');
             ui.toast('⚠️ Completa reps y carga');
+            return;
+        }
+        if (rir === null || rir === undefined) {
+            const { ui } = await import('./ui.js');
+            ui.toast('⚠️ Selecciona RIR o usa “Guardar sin RIR”');
             return;
         }
         
@@ -205,9 +300,10 @@ export const actions = {
             reps: parseFloat(reps),
             load: parseFloat(load),
             rir: rir,
+            rir_is_open_ended: Boolean(state.selectedRIRIsOpenEnded),
             notes: notes
         });
-        setState({ ...state, setModal: null });
+        setState({ ...state, setModal: null, selectedRIR: null, selectedRIRIsOpenEnded: false });
         const { ui } = await import('./ui.js');
         ui.toast('✓ Set guardado');
         ui.render();
@@ -386,6 +482,7 @@ restoreFromBackupJSON: async (mode) => {
         const { setDb } = await import('./data.js');
         const currentData = utils.load();
         currentData.weeks = state.pendingMergeData;
+        currentData.seasons = state.pendingMergeSeasons || currentData.seasons;
         utils.save(currentData, backup.auto);
         setDb(currentData);
         setState({
@@ -393,6 +490,7 @@ restoreFromBackupJSON: async (mode) => {
             conflictQueue: [],
             currentConflictIndex: 0,
             pendingMergeData: null,
+            pendingMergeSeasons: null,
             modal: null
         });
         const { ui } = await import('./ui.js');
@@ -428,22 +526,34 @@ restoreFromBackupJSON: async (mode) => {
         const { ui } = await import('./ui.js');
         ui.toast("✓ Semana exportada");
     },
-    exportExerciseCSV: async (exerciseName) => {
-        const csv = analytics.exportToCSV(exerciseName);
+    exportExerciseCSV: async (exerciseKey) => {
+        const csv = analytics.exportToCSV(exerciseKey);
         if (!csv) {
             const { ui } = await import('./ui.js');
             ui.toast('⚠️ No hay datos para exportar');
             return;
         }
-        await utils.downloadCSV(csv, `${exerciseName.replace(/\s+/g, '_')}_history.csv`);
+        await utils.downloadCSV(csv, `${exerciseKey.replace(/\s+/g, '_')}_history.csv`);
         const { ui } = await import('./ui.js');
         ui.toast('✓ CSV exportado');
     },
-    exportExerciseJSON: async (exerciseName) => {
-        const data = analytics.exportToJSON(exerciseName);
-        await utils.download(data, `${exerciseName.replace(/\s+/g, '_')}_history.json`);
+    exportExerciseJSON: async (exerciseKey) => {
+        const data = analytics.exportToJSON(exerciseKey);
+        await utils.download(data, `${exerciseKey.replace(/\s+/g, '_')}_history.json`);
         const { ui } = await import('./ui.js');
         ui.toast('✓ JSON exportado');
+    },
+    exportSeasonJSON: async (seasonId) => {
+        const { getDb } = await import('./data.js');
+        const { seasons } = await import('./seasons.js');
+        const report = seasons.summary(getDb(), seasonId);
+        if (report) await utils.download({ export_type: 'season_summary', exported_at: utils.isoNow(), ...report }, `season_${seasonId}.json`);
+    },
+    deleteSeasonFromManage: async (seasonId) => {
+        if (!confirm('¿Borrar solo los metadatos de esta temporada?')) return;
+        await logic.deleteSeason(seasonId);
+        const { ui } = await import('./ui.js');
+        ui.render();
     },
     exportAllRMs: async () => {
         const state = getState();

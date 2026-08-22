@@ -4,14 +4,15 @@
   "description": "Strength Tracker - gestion de entrenamientos de gimnasio (web + Android via Capacitor). Offline-first.",
   "main": "www/index.html",
   "scripts": {
-    "test": "node tests/test_security_merge.js && node tests/test_p1_security.mjs",
-    "lint": "eslint tests/",
+    "build": "node scripts/build.js",
+    "test": "node tests/test_p1_security.mjs && node tests/test_analytics.mjs && node tests/test_rir.mjs && node tests/test_seasons.mjs && node tests/test_change_dispatcher.mjs && node tests/test_no_inline_handlers.mjs",
+    "lint": "eslint www/js/ tests/ scripts/",
     "lint:fix": "eslint www/js/ tests/ --fix",
     "sync": "npx cap sync android",
     "android:open": "npx cap open android",
     "serve": "python3 -m http.server 4173 --directory www",
-    "build:check": "node -e \"const fs=require('fs'); const html=fs.readFileSync('www/index.html','utf8'); const script=html.match(/<script>([\\s\\S]*?)<\\/script>/); if(!script){console.error('Inline application bundle not found');process.exit(1);} console.log('Bundle OK:',script[1].length,'chars');\"",
-    "prebuild:android": "npm run lint && npm run test && npm run sync",
+    "build:check": "npm run build && node -e \"const fs=require('fs'); if(!fs.existsSync('www/dist/app.js')){throw new Error('Application bundle not found');}\"",
+    "prebuild:android": "npm run verify && npm run sync",
     "verify": "npm run build:check && npm run lint && npm run test"
   },
   "keywords": [
@@ -27,13 +28,14 @@
   "dependencies": {
     "@capacitor/android": "8.0.1",
     "@capacitor/app": "8.0.0",
-    "@capacitor/cli": "8.0.1",
+    "@capacitor/cli": "8.5.0",
     "@capacitor/core": "8.0.0",
     "@capacitor/filesystem": "8.0.0",
     "@capacitor/share": "8.0.0",
-    "@eslint/js": "^10.0.1"
+    "@eslint/js": "10.0.1"
   },
   "devDependencies": {
-    "eslint": "^9.39.5"
+    "eslint": "10.9.0",
+    "esbuild": "0.28.2"
   }
 }

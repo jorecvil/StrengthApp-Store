@@ -61,6 +61,7 @@ export const logic = {
             goal_summary: "Sesión añadida manualmente",
             estimated_duration_min: 45,
             session_completion: { status: 'pending', started_at: null, completed_at: null },
+            scheduled_date: null,
             session_notes: "",
             exercises: [],
             modified_at: utils.isoNow()
@@ -147,12 +148,19 @@ export const logic = {
         const ex = await logic.getExercise(wId, sId, exId);
         if (!ex) return;
         while(ex.execution.sets.length <= setIndex) {
-            ex.execution.sets.push({ reps: null, load: null, rir: null, notes: "" });
+            ex.execution.sets.push({ reps: null, load: null, rir: null, rir_is_open_ended: false, notes: "" });
         }
         const set = ex.execution.sets[setIndex];
         if (data.reps !== undefined) set.reps = data.reps !== null && data.reps !== '' ? parseFloat(data.reps) : null;
         if (data.load !== undefined) set.load = data.load !== null && data.load !== '' ? parseFloat(data.load) : null;
-        if (data.rir !== undefined) set.rir = data.rir;
+        if (data.rir !== undefined) {
+            const rir = data.rir === null || data.rir === '' ? null : Number(data.rir);
+            if (rir !== null && (!Number.isInteger(rir) || rir < 0 || rir > 4)) throw new Error('RIR inválido');
+            set.rir = rir;
+            set.rir_is_open_ended = rir === 4 && Boolean(data.rir_is_open_ended);
+        } else if (data.rir_is_open_ended !== undefined) {
+            set.rir_is_open_ended = set.rir === 4 && Boolean(data.rir_is_open_ended);
+        }
         if (data.notes !== undefined) set.notes = validate.string(data.notes, 500);
         set.completed_at = utils.isoNow();
         ex.modified_at = utils.isoNow();
@@ -181,10 +189,21 @@ export const logic = {
         utils.save(db, backup.auto);
         setDb(db);
     },
+    updateScheduledDate: async (wId, sId, date) => {
+        const session = await logic.getSession(wId, sId);
+        const cleanDate = validate.date(date);
+        if (!session || !cleanDate) throw new Error('Fecha programada inválida');
+        session.scheduled_date = cleanDate;
+        session.modified_at = utils.isoNow();
+        const { getDb, setDb } = await getLogicDeps();
+        const db = getDb();
+        utils.save(db, backup.auto);
+        setDb(db);
+    },
     addSet: async (wId, sId, exId) => {
         const ex = await logic.getExercise(wId, sId, exId);
         if (!ex) return;
-        ex.execution.sets.push({ reps: 0, load: 0, rir: null, notes: "", is_extra: true, completed_at: utils.isoNow() });
+        ex.execution.sets.push({ reps: 0, load: 0, rir: null, rir_is_open_ended: false, notes: "", is_extra: true, completed_at: utils.isoNow() });
         ex.modified_at = utils.isoNow();
         const { getDb, setDb } = await getLogicDeps();
         const db = getDb();
@@ -291,5 +310,54 @@ export const logic = {
         const currentIdx = s.exercises.findIndex(e => e.exercise_id === currentExId);
         if (currentIdx === -1 || currentIdx === s.exercises.length - 1) return null;
         return s.exercises[currentIdx + 1];
+    },
+    createSeason: async (input) => {
+        const { getDb, setDb } = await getLogicDeps();
+        const { seasons } = await import('./seasons.js');
+        const db = getDb();
+        const season = seasons.create(db, input);
+        utils.save(db, backup.auto);
+        setDb(db);
+        return season;
+    },
+    prepareSeasonCreate: async (input) => {
+        const { getDb } = await getLogicDeps();
+        const { seasons } = await import('./seasons.js');
+        return seasons.prepareCreate(getDb(), input);
+    },
+    applySeasonCreate: async (prepared) => {
+        const { getDb, setDb } = await getLogicDeps();
+        const { seasons } = await import('./seasons.js');
+        const db = getDb();
+        const season = seasons.applyCreate(db, prepared);
+        utils.save(db, backup.auto);
+        setDb(db);
+        return season;
+    },
+    closeSeason: async (seasonId, endDate) => {
+        const { getDb, setDb } = await getLogicDeps();
+        const { seasons } = await import('./seasons.js');
+        const db = getDb();
+        const season = seasons.close(db, seasonId, endDate);
+        utils.save(db, backup.auto);
+        setDb(db);
+        return season;
+    },
+    updateSeason: async (seasonId, input) => {
+        const { getDb, setDb } = await getLogicDeps();
+        const { seasons } = await import('./seasons.js');
+        const db = getDb();
+        const season = seasons.update(db, seasonId, input);
+        utils.save(db, backup.auto);
+        setDb(db);
+        return season;
+    },
+    deleteSeason: async (seasonId) => {
+        const { getDb, setDb } = await getLogicDeps();
+        const { seasons } = await import('./seasons.js');
+        const db = getDb();
+        seasons.remove(db, seasonId);
+        utils.save(db, backup.auto);
+        setDb(db);
     }
 };

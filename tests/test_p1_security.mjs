@@ -32,7 +32,7 @@ Object.defineProperty(globalThis, 'navigator', {
 });
 globalThis.confirm = () => true;
 
-const moduleUrl = (file) => pathToFileURL(new URL(`../www/js/${file}`, import.meta.url).pathname).href;
+const moduleUrl = (file) => new URL(`../www/js/${file}`, import.meta.url).href;
 const { utils } = await import(moduleUrl('utils.js'));
 const { validate } = await import(moduleUrl('validate.js'));
 const { backup } = await import(moduleUrl('backup.js'));
@@ -164,8 +164,6 @@ await test('renderiza aunque el registro nativo del botón Atrás falle', async 
     };
     await import(moduleUrl('app.js'));
     await new Promise((resolve) => setTimeout(resolve, 0));
-    assert.equal(typeof window.actions.openImport, 'function');
-    assert.equal(typeof window.logic.createManualWeek, 'function');
     assert.equal(appElement.innerHTML.includes('Strength Tracker'), true);
     window.Capacitor = null;
 });

@@ -9,7 +9,7 @@
 export const STORE_KEY = 'strength_app_v6_data';
 export const THEME_KEY = 'strength_app_theme';
 export const BACKUP_PREFIX = 'strength_app_backup_';
-export const DB_SCHEMA_VERSION = 2;
+export const DB_SCHEMA_VERSION = 3;
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024; // 5 MB
 
 // Validación de identificadores (IDs de semana/sesión/ejercicio)

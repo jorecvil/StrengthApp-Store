@@ -5,7 +5,7 @@
  * ============================================================================
  */
 
-import { MAX_IMPORT_BYTES, ID_PATTERN, MAX_ID_LENGTH } from './config.js';
+import { MAX_IMPORT_BYTES, ID_PATTERN, MAX_ID_LENGTH, DB_SCHEMA_VERSION } from './config.js';
 import { utils } from './utils.js';
 
 export const validate = {
@@ -43,7 +43,7 @@ export const validate = {
         try {
             obj = JSON.parse(str);
         } catch(e) {
-            throw new Error(`JSON malformado: ${e.message}`);
+            throw new Error(`JSON malformado: ${e.message}`, { cause: e });
         }
 
         if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error("El JSON debe contener un objeto");
@@ -77,7 +77,7 @@ export const validate = {
         try {
             obj = JSON.parse(str);
         } catch(e) {
-            throw new Error(`Backup JSON malformado: ${e.message}`);
+            throw new Error(`Backup JSON malformado: ${e.message}`, { cause: e });
         }
         
         if (!obj || typeof obj !== 'object') throw new Error("Formato de backup inválido");
@@ -108,8 +108,9 @@ export const validate = {
         });
         
         return {
-            schema_version: 2,
+            schema_version: DB_SCHEMA_VERSION,
             weeks: cleanWeeks,
+            seasons: validate.sanitizeSeasons(extractedData.seasons),
             modified_at: utils.isoNow()
         };
     },
@@ -192,6 +193,7 @@ export const validate = {
                         reps: reps,
                         load: load,
                         rir: rir,
+                        rir_is_open_ended: rir === 4 && Boolean(st.rir_is_open_ended),
                         notes: validate.string(st.notes, 500, 'set_notes', ''),
                         completed_at: st.completed_at || null,
                         is_extra: Boolean(st.is_extra)
@@ -228,6 +230,7 @@ export const validate = {
                     started_at: completion.started_at || null,
                     completed_at: completion.completed_at || null
                 },
+                scheduled_date: validate.date(s.scheduled_date),
                 session_notes: validate.string(s.session_notes, 2000, 'session_notes', ''),
                 exercises: cleanExercises,
                 modified_at: s.modified_at || utils.isoNow()
@@ -238,7 +241,57 @@ export const validate = {
             week: cleanWeekRef,
             sessions: cleanSessions,
             generated_at: raw.generated_at || utils.isoNow(),
-            schema_version: raw.schema_version || 2
+            schema_version: raw.schema_version || DB_SCHEMA_VERSION
         };
+    },
+    date: (value) => {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+        const [year, month, day] = value.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? value : null;
+    },
+    sanitizeSeasons: (rawSeasons) => {
+        if (!rawSeasons || typeof rawSeasons !== 'object' || Array.isArray(rawSeasons)) return {};
+        const seasons = {};
+        Object.values(rawSeasons).forEach((season) => {
+            if (!season || typeof season !== 'object') return;
+            const seasonId = validate.id(season.season_id, 'season_id');
+            const startDate = validate.date(season.start_date);
+            const endDate = season.end_date === null || season.end_date === undefined ? null : validate.date(season.end_date);
+            if (!startDate || (endDate && endDate < startDate)) return;
+            const objective = ['strength', 'hypertrophy', 'maintenance', 'return'].includes(season.objective) ? season.objective : 'strength';
+            seasons[seasonId] = {
+                season_id: seasonId,
+                name: validate.string(season.name, 80, 'season_name', 'Temporada'),
+                start_date: startDate,
+                end_date: endDate,
+                objective,
+                priority_exercise_keys: Array.isArray(season.priority_exercise_keys) ? season.priority_exercise_keys.slice(0, 30).map(key => validate.string(key, 200)).filter(Boolean) : [],
+                notes: validate.string(season.notes, 500, 'season_notes', ''),
+                created_at: season.created_at || utils.isoNow(),
+                modified_at: season.modified_at || utils.isoNow()
+            };
+        });
+        const timestamp = (value) => {
+            const parsed = new Date(value).getTime();
+            return Number.isNaN(parsed) ? null : parsed;
+        };
+        const active = Object.values(seasons).filter(season => !season.end_date).sort((a, b) => {
+            const modified = (timestamp(b.modified_at) ?? -Infinity) - (timestamp(a.modified_at) ?? -Infinity);
+            if (modified) return modified;
+            const created = (timestamp(b.created_at) ?? -Infinity) - (timestamp(a.created_at) ?? -Infinity);
+            return created || b.season_id.localeCompare(a.season_id);
+        });
+        if (active.length > 1) {
+            const winner = active[0];
+            active.slice(1).forEach((season) => {
+                const beforeWinner = new Date(`${winner.start_date}T12:00:00`);
+                beforeWinner.setDate(beforeWinner.getDate() - 1);
+                const candidate = `${beforeWinner.getFullYear()}-${String(beforeWinner.getMonth() + 1).padStart(2, '0')}-${String(beforeWinner.getDate()).padStart(2, '0')}`;
+                season.end_date = candidate >= season.start_date ? candidate : season.start_date;
+                season.modified_at = winner.modified_at;
+            });
+        }
+        return seasons;
     }
 };

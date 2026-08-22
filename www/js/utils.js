@@ -138,19 +138,19 @@ export const utils = {
     load: () => {
         const raw = localStorage.getItem(STORE_KEY);
         if (!raw) {
-            return { schema_version: DB_SCHEMA_VERSION, weeks: {}, created_at: utils.isoNow(), modified_at: utils.isoNow() };
+            return { schema_version: DB_SCHEMA_VERSION, weeks: {}, seasons: {}, created_at: utils.isoNow(), modified_at: utils.isoNow() };
         }
         try {
             const data = JSON.parse(raw);
             return utils.migrateSchema(data);
         } catch (e) {
             console.error('Datos corruptos en localStorage:', e);
-            return { schema_version: DB_SCHEMA_VERSION, weeks: {}, created_at: utils.isoNow(), modified_at: utils.isoNow() };
+            return { schema_version: DB_SCHEMA_VERSION, weeks: {}, seasons: {}, created_at: utils.isoNow(), modified_at: utils.isoNow() };
         }
     },
     migrateSchema: (data) => {
         if (!data || typeof data !== 'object') {
-            return { schema_version: DB_SCHEMA_VERSION, weeks: {}, created_at: utils.isoNow(), modified_at: utils.isoNow() };
+            return { schema_version: DB_SCHEMA_VERSION, weeks: {}, seasons: {}, created_at: utils.isoNow(), modified_at: utils.isoNow() };
         }
         if (!data.weeks || typeof data.weeks !== 'object') {
             data.weeks = {};
@@ -179,6 +179,34 @@ export const utils = {
                 console.warn('No se pudo guardar la migración inmediatamente:', err);
             }
         }
+        const needsV3Migration = data.schema_version < 3;
+        data.seasons = data.seasons && typeof data.seasons === 'object' ? data.seasons : {};
+        const activeSeasons = Object.values(data.seasons).filter(season => season && !season.end_date).sort((a, b) => {
+            const timestamp = (value) => Number.isNaN(new Date(value).getTime()) ? -Infinity : new Date(value).getTime();
+            return timestamp(b.modified_at) - timestamp(a.modified_at) || timestamp(b.created_at) - timestamp(a.created_at) || String(b.season_id).localeCompare(String(a.season_id));
+        });
+        if (activeSeasons.length > 1) {
+            const winner = activeSeasons[0];
+            activeSeasons.slice(1).forEach((season) => {
+                const close = new Date(`${winner.start_date}T12:00:00`);
+                close.setDate(close.getDate() - 1);
+                const date = `${close.getFullYear()}-${String(close.getMonth() + 1).padStart(2, '0')}-${String(close.getDate()).padStart(2, '0')}`;
+                season.end_date = date >= season.start_date ? date : season.start_date;
+            });
+        }
+        Object.values(data.weeks).forEach(w => (w.sessions || []).forEach(s => {
+            if (s.scheduled_date === undefined) s.scheduled_date = null;
+            (s.exercises || []).forEach(e => (e.execution?.sets || []).forEach(set => {
+                if (set.rir_is_open_ended === undefined) set.rir_is_open_ended = false;
+                if (set.rir !== 4) set.rir_is_open_ended = false;
+            }));
+        }));
+        if (needsV3Migration) {
+            data.schema_version = 3;
+            data.modified_at = utils.isoNow();
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (err) { console.warn('No se pudo guardar la migración v3:', err); }
+        }
+        if (!data.seasons || typeof data.seasons !== 'object') data.seasons = {};
         return data;
     },
     download: async (data, filename) => {

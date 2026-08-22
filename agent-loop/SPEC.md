@@ -1,5 +1,7 @@
 # Especificación Técnica — Prioridad 1: Integridad y Seguridad de Datos
 
+> Estado: hito histórico implementado. El esquema vigente es v3; la especificación activa para analítica y temporadas está en `../SPEC.md` y `../SPEC_ANALITICA_Y_TEMPORADAS.md`.
+
 ## 1. Contexto y Objetivos
 Strength Tracker es una PWA y aplicación móvil Capacitor (Android).
 La versión actual (v6.6) presenta riesgos de seguridad en el renderizado de datos arbitrarios vía `innerHTML`, falta de validación exhaustiva al importar JSONs, fusión de datos simple sin resolución de conflictos, y ausencia de control de esquema/migraciones ante JSONs corruptos o cuotas excedidas.
@@ -8,7 +10,7 @@ El objetivo de esta fase (P1 Seguridad) es elevar la robustez de la aplicación 
 1. **Renderizado Seguro**: Sanitización contra XSS e inyección HTML/JS en cualquier interpolación de datos.
 2. **Validación Exhaustiva**: Verificación estricta de límites de tamaño, tipos, rangos numéricos y estructura jerárquica de semanas, sesiones, ejercicios y series.
 3. **Merge con Resolución de Conflictos**: Fusión basada en identificadores únicos y `modified_at`. Ante colisiones reales con divergencia de datos, se solicita explícitamente la decisión al usuario mediante interfaz modal.
-4. **Versionado de Esquema y Resiliencia**: Esquema v2 con migraciones automáticas y mecanismos de recuperación ante cuota de almacenamiento llena o JSON corrupto.
+4. **Versionado de Esquema y Resiliencia**: Base original v2 migrada de forma compatible al schema v3, con mecanismos de recuperación ante cuota de almacenamiento llena o JSON corrupto.
 
 ---
 
@@ -38,7 +40,7 @@ El objetivo de esta fase (P1 Seguridad) es elevar la robustez de la aplicación 
   - Si existe divergencia entre la versión local y la importada, el sistema identifica el conflicto y activa un diálogo/modal de resolución interactivo que permite al usuario elegir qué versión conservar ("Conservar Local", "Usar Importada", "Conservar Ambas con nuevo ID").
 
 ### CA-4: Versionado de Esquema y Resiliencia de Almacenamiento
-- Se define `DB_SCHEMA_VERSION = 2`.
+- El schema vigente es `DB_SCHEMA_VERSION = 3`; la migración conserva compatibilidad con datos v1/v2.
 - Las versiones anteriores (v1 / v6.6) se migran de forma transparente a la nueva estructura con `schema_version` y timestamps.
 - Las llamadas a `localStorage.setItem` están protegidas contra `QuotaExceededError`. Si se alcanza la cuota, se informa al usuario y se ofrece exportar/limpiar backups antiguos.
 - Si el JSON almacenado se corrompe, la aplicación no produce pantalla en blanco: atrapa el error, notifica y permite restaurar desde el último backup diario válido.

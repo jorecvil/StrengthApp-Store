@@ -19,7 +19,12 @@ let state = {
     conflictQueue: [],
     currentConflictIndex: 0,
     pendingMergeData: null,
-    selectedRIR: null
+    pendingMergeSeasons: null,
+    selectedRIR: null,
+    selectedRIRIsOpenEnded: false,
+    analyticsPeriod: 'active_season',
+    analyticsExerciseKey: null,
+    analyticsSeasonId: null
 };
 
 export const getDb = () => db;

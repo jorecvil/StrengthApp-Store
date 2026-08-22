@@ -12,11 +12,6 @@ import { ui } from './ui.js';
 import { actions } from './actions.js';
 import { logic } from './logic.js';
 import { backup } from './backup.js';
-import { analytics } from './analytics.js';
-
-// Legacy templates still use static handlers. Only code-controlled module APIs
-// are exposed; imported data is passed through data attributes and validation.
-Object.assign(window, { actions, analytics, backup, logic, ui, utils });
 
 export const init = async () => {
     try {

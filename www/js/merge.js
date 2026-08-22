@@ -59,6 +59,14 @@ export const mergeEngine = {
         const currentData = utils.load();
         const conflicts = [];
         const mergedWeeks = { ...currentData.weeks };
+        const mergedSeasons = { ...currentData.seasons };
+
+        Object.values(importedData.seasons || {}).forEach((incomingSeason) => {
+            const localSeason = mergedSeasons[incomingSeason.season_id];
+            if (!localSeason || new Date(incomingSeason.modified_at).getTime() >= new Date(localSeason.modified_at).getTime()) {
+                mergedSeasons[incomingSeason.season_id] = incomingSeason;
+            }
+        });
 
         Object.values(importedData.weeks || {}).forEach(incomingWeek => {
             const weekId = incomingWeek.week.week_id;
@@ -121,6 +129,7 @@ export const mergeEngine = {
             setState({
                 ...state,
                 pendingMergeData: mergedWeeks,
+                pendingMergeSeasons: mergedSeasons,
                 conflictQueue: conflicts,
                 currentConflictIndex: 0,
                 modal: 'conflict'
@@ -128,6 +137,7 @@ export const mergeEngine = {
             await ui.render();
         } else {
             currentData.weeks = mergedWeeks;
+            currentData.seasons = mergedSeasons;
             utils.save(currentData, backup.auto);
             setDb(currentData);
             toastFn('✓ Datos fusionados sin conflictos');
